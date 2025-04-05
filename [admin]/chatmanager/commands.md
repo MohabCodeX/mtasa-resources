@@ -20,7 +20,6 @@ For the `/sendpos` command, the target can be:
 
 - A player name - Sends to that specific player
 - "team" - Sends to all players in your team
-- "admins" - Sends to all online admins
 
 ## Team Leader Commands
 
@@ -41,7 +40,7 @@ These commands require the "command.mute" permission.
 | `/mutelist`  | Show a list of all currently muted players               | `/mutelist`               | `/mutelist`                              |
 | `/clearchat` | Clear chat messages for yourself or all players          | `/clearchat [all]`        | `/clearchat all`                         |
 | `/announce`  | Send a server-wide admin announcement                    | `/announce [message]`     | `/announce Server restart in 10 minutes` |
-| `/system`    | Send a system message to all players                     | `/system [message]`       | `/system Welcome to our server!`         |
+| `/system`    | Send a system message to all players                     | `/system [message]`       | `/system Welcome to our server!"         |
 
 ## Admin Commands - Filter Management
 
@@ -79,13 +78,8 @@ The Chat Manager uses MTA's built-in ACL system for command permissions:
 1. **Sending location to specific player:**
 
    - `/sendpos John I'm waiting here for you`
-   - Result for John: "[LOCATION] YourName is at Downtown (123, 456, 789) (I'm waiting here for you)"
+   - Result for John: "[PRIVATE-LOCATION] YourName is at Downtown (123, 456, 789) (I'm waiting here for you)"
 
 2. **Sending location to team:**
-
    - `/sendpos team Found a vehicle here`
-   - Result for team: "[LOCATION] YourName is at Beach (234, 567, 890) (Found a vehicle here)"
-
-3. **Sending location to all admins:**
-   - `/sendpos admins Need help with a player`
-   - Result for admins: "[LOCATION] YourName is at Airport (345, 678, 901) (Need help with a player)"
+   - Result for team: "[TEAM-LOCATION] YourName is at Beach (234, 567, 890) (Found a vehicle here)"

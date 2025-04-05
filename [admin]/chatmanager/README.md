@@ -96,19 +96,17 @@ The `/sendpos` command allows players to share their current position with:
 
 - A specific player
 - Their team
-- All online admins
 
 #### Syntax:
 
 ```
-/sendpos [player/team/admins] [optional message]
+/sendpos [player/team] [optional message]
 ```
 
 #### Examples:
 
 - `/sendpos John` - Share your position with player named John
 - `/sendpos team` - Share your position with all members of your team
-- `/sendpos admins Need help here` - Share your position with admins along with a message
 
 #### Output Format:
 
@@ -129,7 +127,7 @@ exports.chatmanager:sendPositionToTarget(player, targetType, targetName, message
 Parameters:
 
 - `player`: The player element whose position will be shared
-- `targetType`: Can be "player", "team", or "admins"
+- `targetType`: Can be "player" or "team"
 - `targetName`: The player name (when targetType is "player")
 - `message`: Optional message to include
 

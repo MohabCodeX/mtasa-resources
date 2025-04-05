@@ -1,6 +1,7 @@
 local g_FragLimit,g_TimeLimit,g_RespawnTime,g_default_deathpickups,g_MissionTimer,g_FragLimitText
 local announcementText,processWasted
 local mapTimers = {}
+local preservedStates = {}
 
 local defaults = {
 	fragLimit = 10,
@@ -13,8 +14,128 @@ local function sortingFunction (a,b)
 	return (getElementData(a,"Score") or 0) > (getElementData(b,"Score") or 0)
 end
 
+function preservePlayerStates()
+    preservedStates = {}
+    for _, player in ipairs(getElementsByType("player")) do
+        local x, y, z = getElementPosition(player)
+        local rx, ry, rz = getElementRotation(player)
+        local interior = getElementInterior(player)
+        local dimension = getElementDimension(player)
+        local health = getElementHealth(player)
+        local armor = getPedArmor(player)
+        local team = getPlayerTeam(player)
+        local weapons = {}
+
+        -- Save all weapons and ammo
+        for slot = 0, 12 do
+            local weapon = getPedWeapon(player, slot)
+            local ammo = getPedTotalAmmo(player, slot)
+            if weapon > 0 and ammo > 0 then
+                weapons[slot] = {weapon, ammo}
+            end
+        end
+
+        -- Get active control states
+        local controls = {}
+        local controlNames = {"fire", "next_weapon", "previous_weapon", "forwards",
+                             "backwards", "left", "right", "zoom_in", "zoom_out",
+                             "enter_exit", "change_camera"}
+        for _, control in ipairs(controlNames) do
+            controls[control] = isControlEnabled(player, control)
+        end
+
+        preservedStates[player] = {
+            position = {x, y, z},
+            rotation = {rx, ry, rz},
+            interior = interior,
+            dimension = dimension,
+            health = health,
+            armor = armor,
+            team = team,
+            weapons = weapons,
+            cameraTarget = getCameraTarget(player),
+            controls = controls,
+            frozen = isElementFrozen(player),
+            alpha = getElementAlpha(player)
+        }
+
+        -- Trigger client to save their states too
+        triggerClientEvent(player, "tdm:preserveClientState", player)
+    end
+    outputDebugString("TDM: Preserved states for " .. #getElementsByType("player") .. " players")
+end
+
+function restorePlayerStates()
+    local restoredCount = 0
+    for player, data in pairs(preservedStates) do
+        if isElement(player) then
+            -- Stop any animations
+            setPedAnimation(player)
+
+            -- Reset camera and fade in first to avoid black screen
+            fadeCamera(player, true, 1.0)
+            setCameraTarget(player, player)
+
+            -- Reset player position and state
+            if data.position then
+                setElementPosition(player, unpack(data.position))
+            end
+
+            if data.rotation then
+                setElementRotation(player, unpack(data.rotation))
+            end
+
+            -- Set other states
+            setElementInterior(player, data.interior or 0)
+            setElementDimension(player, data.dimension or 0)
+            setElementHealth(player, data.health or 100)
+            setPedArmor(player, data.armor or 0)
+            setElementAlpha(player, data.alpha or 255)
+            setElementFrozen(player, data.frozen or false)
+
+            -- Remove all weapons first
+            takeAllWeapons(player)
+
+            -- Restore weapons
+            if data.weapons then
+                for slot, weaponData in pairs(data.weapons) do
+                    giveWeapon(player, weaponData[1], weaponData[2], false)
+                end
+            end
+
+            -- Restore team if it exists
+            if data.team and isElement(data.team) then
+                setPlayerTeam(player, data.team)
+            else
+                setPlayerTeam(player, nil)
+            end
+
+            -- Enable all controls
+            if data.controls then
+                for control, state in pairs(data.controls) do
+                    toggleControl(player, control, state)
+                end
+            else
+                toggleAllControls(player, true)
+            end
+
+            -- Remove scoreboard
+            exports.scoreboard:setPlayerScoreboardForced(player, false)
+
+            -- Trigger client to restore their state
+            triggerClientEvent(player, "tdm:restoreClientState", player)
+
+            restoredCount = restoredCount + 1
+        end
+    end
+
+    outputDebugString("TDM: Restored states for " .. restoredCount .. " players")
+    preservedStates = {}
+end
+
 addEventHandler ( "onGamemodeStart", root,
 	function()
+		preservePlayerStates()
 		teams = {
 			createTeam ( "Red", 255, 0, 0 ),
 			createTeam ( "Blue", 0, 0, 255 ),
@@ -30,7 +151,7 @@ addEventHandler ( "onGamemodeStart", root,
 	end
 )
 
-addEventHandler ( "onGamemodeStop", root,
+addEventHandler ( "onClientResourceStop", root,
 	function()
 		set("deathpickups.only_current",g_default_deathpickups)
 		for i,player in ipairs(getElementsByType"player") do
@@ -38,6 +159,53 @@ addEventHandler ( "onGamemodeStop", root,
 			removeElementData ( player, "Rank" )
 		end
 	end
+)
+
+addEventHandler("onResourceStop", resourceRoot,
+    function()
+        -- Clean up any timers
+        for i, timer in ipairs(mapTimers) do
+            if isTimer(timer) then
+                killTimer(timer)
+            end
+        end
+        mapTimers = {}
+
+        -- Clean up UI elements
+        if g_FragLimitText then
+            destroyElement(g_FragLimitText)
+            g_FragLimitText = nil
+        end
+
+        if g_MissionTimer and isElement(g_MissionTimer) then
+            destroyElement(g_MissionTimer)
+            g_MissionTimer = nil
+        end
+
+        if announcementText then
+            announcementText:visible(false)
+            announcementText:sync()
+        end
+
+        -- Remove event handlers
+        removeEventHandler("onPlayerWasted", root, processWasted)
+
+        -- Restore all player states
+        restorePlayerStates()
+
+        -- Reset deathpickups setting
+        if g_default_deathpickups ~= nil then
+            set("deathpickups.only_current", g_default_deathpickups)
+        end
+
+        -- Clean up element data
+        for i, player in ipairs(getElementsByType("player")) do
+            removeElementData(player, "Score")
+            removeElementData(player, "Rank")
+        end
+
+        outputDebugString("TDM resource stopped and cleaned up successfully")
+    end
 )
 
 function dmMapStart(resource,mapRoot)
@@ -232,3 +400,8 @@ function setColtStat ( fullSkill, player )
 end
 addEventHandler ( "doSetColtStat", root, setColtStat )
 
+-- Add custom events for client-side preservation
+addEvent("tdm:clientPreservationComplete", true)
+addEventHandler("tdm:clientPreservationComplete", root, function()
+    -- This event can be used if we need confirmation from clients
+end)

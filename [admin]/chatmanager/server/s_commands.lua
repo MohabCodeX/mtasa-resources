@@ -507,15 +507,13 @@ local commandActions = {
         local message = params.message or ""
 
         if not receiver or receiver == "" then
-            outputChatBox("SYNTAX: /sendpos [player/team/admins] [optional message]", player, 255, 255, 0)
+            outputChatBox("SYNTAX: /sendpos [player/team] [optional message]", player, 255, 255, 0)
             return
         end
 
         local targetType
         if receiver:lower() == "team" then
             targetType = "team"
-        elseif receiver:lower() == "admins" then
-            targetType = "admins"
         else
             targetType = "player"
         end
@@ -531,8 +529,22 @@ local function sendPositionToTarget(player, targetType, targetName, message)
     local zoneName = getZoneName(x, y, z) or "Unknown"
     local locationText = zoneName .. " (" .. math.floor(x) .. ", " .. math.floor(y) .. ", " .. math.floor(z) .. ")"
 
-    -- Format the message to send
-    local positionInfo = "[LOCATION] " .. getPlayerName(player) .. " is at " .. locationText
+    -- Format the message to send with prefix based on target type
+    local prefixType = ""
+
+    -- Set the appropriate prefix based on target type
+    if targetType == "player" then
+        prefixType = "PRIVATE"
+    elseif targetType == "team" then
+        prefixType = "TEAM"
+    else
+        -- Invalid target type, default to PRIVATE
+        prefixType = "PRIVATE"
+        targetType = "player" -- Force to player type for safety
+    end
+
+    -- Create the final position info message
+    local positionInfo = "[" .. prefixType .. "-LOCATION] " .. getPlayerName(player) .. " is at " .. locationText
     if message and message ~= "" then
         positionInfo = positionInfo .. " (" .. message .. ")"
     end
@@ -558,20 +570,8 @@ local function sendPositionToTarget(player, targetType, targetName, message)
             outputChatBox("You are not in a team.", player, 255, 0, 0)
             return false
         end
-    elseif targetType == "admins" then
-        -- Send to all admins
-        for _, targetPlayer in ipairs(getElementsByType("player")) do
-            if hasObjectPermissionTo(targetPlayer, "command.mute", false) then
-                table.insert(targets, targetPlayer)
-            end
-        end
-
-        if #targets == 0 then
-            outputChatBox("No admins online.", player, 255, 165, 0)
-            return false
-        end
     else
-        outputChatBox("Invalid target. Use a player name, 'team', or 'admins'.", player, 255, 0, 0)
+        outputChatBox("Invalid target. Use a player name or 'team'.", player, 255, 0, 0)
         return false
     end
 
@@ -812,8 +812,6 @@ local function processCommand(player, cmd, ...)
         local targetType
         if receiver:lower() == "team" then
             targetType = "team"
-        elseif receiver:lower() == "admins" then
-            targetType = "admins"
         else
             targetType = "player"
         end

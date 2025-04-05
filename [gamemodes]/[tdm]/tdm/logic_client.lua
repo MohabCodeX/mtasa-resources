@@ -179,3 +179,120 @@ addEventHandler ( "onColtPickup", root,
 		end
 	end
 )
+
+-- Add these variables for client-side state preservation
+local preservedClientState = {}
+
+-- Create events for preserving and restoring client state
+addEvent("tdm:preserveClientState", true)
+addEventHandler("tdm:preserveClientState", localPlayer,
+    function()
+        -- Save camera state
+        local cx, cy, cz, tx, ty, tz = getCameraMatrix()
+        preservedClientState.camera = {
+            position = {cx, cy, cz},
+            target = {tx, ty, tz}
+        }
+
+        -- Save HUD state
+        preservedClientState.hud = {}
+        local hudComponents = {"ammo", "area_name", "armour", "breath", "clock",
+                              "health", "money", "radar", "vehicle_name", "weapon"}
+        for _, component in ipairs(hudComponents) do
+            preservedClientState.hud[component] = isHudComponentVisible(component)
+        end
+
+        -- Save other client-specific states
+        preservedClientState.blurLevel = getBlurLevel()
+        preservedClientState.skyGradient = {getSkyGradient()}
+
+        -- Save sound states
+        preservedClientState.sound = {
+            sfx = getSFXStatus(),
+            radio = getRadioChannel()
+        }
+
+        triggerServerEvent("tdm:clientPreservationComplete", localPlayer)
+    end
+)
+
+addEvent("tdm:restoreClientState", true)
+addEventHandler("tdm:restoreClientState", localPlayer,
+    function()
+        -- Restore HUD
+        if preservedClientState.hud then
+            for component, visible in pairs(preservedClientState.hud) do
+                setHudComponentVisible(component, visible)
+            end
+        end
+
+        -- Reset camera fade
+        fadeCamera(true, 1.0)
+
+        -- Restore camera if we have valid data (but ensure player can see)
+        if preservedClientState.camera then
+            setCameraTarget(localPlayer)
+            -- Optional: restore exact camera position
+            -- setCameraMatrix(unpack(preservedClientState.camera.position), unpack(preservedClientState.camera.target))
+        end
+
+        -- Restore visual effects
+        if preservedClientState.blurLevel then
+            setBlurLevel(preservedClientState.blurLevel)
+        end
+
+        if preservedClientState.skyGradient and #preservedClientState.skyGradient >= 6 then
+            setSkyGradient(unpack(preservedClientState.skyGradient))
+        end
+
+        -- Restore sound settings
+        if preservedClientState.sound then
+            if preservedClientState.sound.sfx then
+                setSFXStatus(preservedClientState.sound.sfx)
+            end
+            if preservedClientState.sound.radio then
+                setRadioChannel(preservedClientState.sound.radio)
+            end
+        end
+
+        -- Clear all UI elements
+        if respawnText then respawnText:visible(false) end
+        if fragText then fragText:visible(false) end
+        if spreadText then spreadText:visible(false) end
+        if rankText then rankText:visible(false) end
+
+        preservedClientState = {}
+    end
+)
+
+-- Enhance the resource stop handler
+addEventHandler("onClientResourceStop", resourceRoot,
+    function()
+        -- Ensure camera is reset
+        fadeCamera(true, 1.0)
+        setCameraTarget(localPlayer)
+
+        -- Hide all UI elements
+        if respawnText then respawnText:visible(false) end
+        if fragText then fragText:visible(false) end
+        if spreadText then spreadText:visible(false) end
+        if rankText then rankText:visible(false) end
+
+        -- Make sure HUD is visible
+        for _, component in ipairs({"ammo", "health", "weapon", "money", "breath", "armour", "clock", "radar"}) do
+            setHudComponentVisible(component, true)
+        end
+
+        -- Clear post effects
+        setBlurLevel(0)
+        resetSkyGradient()
+
+        -- Remove all GUI elements that might have been created
+        for _, element in ipairs(getElementsByType("gui-text"), getElementsByType("gui-button"),
+                                 getElementsByType("gui-window"), getElementsByType("gui-label")) do
+            if isElement(element) then
+                destroyElement(element)
+            end
+        end
+    end
+)
