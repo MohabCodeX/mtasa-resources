@@ -7,7 +7,7 @@ This document outlines all the ACL permissions required for the ChatManager reso
 These permissions must be granted to the ChatManager resource:
 
 ```xml
-<acl name="autoACL_chatmanager">
+<acl name="ChatManagerACL">
     <!-- Essential chat functions -->
     <right name="function.cancelEvent" access="true"></right>
     <right name="function.outputChatBox" access="true"></right>
@@ -43,6 +43,15 @@ These permissions must be granted to the ChatManager resource:
 </acl>
 ```
 
+You also need to create a group for the resource:
+
+```xml
+<group name="ChatManagerGroup">
+    <acl name="ChatManagerACL"></acl>
+    <object name="resource.chatmanager"></object>
+</group>
+```
+
 ## Required Command Permissions for Users
 
 These permissions should be assigned to appropriate user groups:
@@ -70,12 +79,22 @@ Add the rights to the appropriate ACL sections in your server's acl.xml file.
 
 ### Method 2: In-Game Commands (No Restart Required)
 
-Use the `/aclsetright` command to add permissions dynamically:
+First, create the ACL and group:
 
 ```
-/aclsetright autoACL_chatmanager function.outputChatBox true
-/aclsetright autoACL_chatmanager function.hasObjectPermissionTo true
+/aclcreate ChatManagerACL
+/aclgroupcreate ChatManagerGroup
+/aclgroupaddacl ChatManagerGroup ChatManagerACL
+/aclgroupaddobject ChatManagerGroup resource.chatmanager
 ```
+
+Then add the specific function rights:
+
+```
+/aclsetright ChatManagerACL function.outputChatBox true
+/aclsetright ChatManagerACL function.hasObjectPermissionTo true
+```
+
 (Repeat for all required permissions)
 
 ### Method 3: Add Resource to Admin Group
@@ -91,7 +110,7 @@ If you prefer a simpler approach, you can add the ChatManager resource to the Ad
 If you encounter "Access denied" errors in the server console:
 
 1. Check which specific function is being denied.
-2. Add that function permission to the `autoACL_chatmanager` ACL.
+2. Add that function permission to the `ChatManagerACL` ACL.
 3. Restart the ChatManager resource with `/refresh chatmanager`.
 
 For command permission issues, make sure the appropriate user groups have the required command permissions.
