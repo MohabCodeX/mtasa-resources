@@ -7,6 +7,10 @@
     <script src="server/s_commands.lua" type="server" />
     <script src="client/c_chat.lua" type="client" cache="false" />
     <script src="shared/settings.lua" type="shared" />
+    <script src="server/s_tdma_integration.lua" type="server" />
+
+    <!-- Integration scripts -->
+    <script src="integration/chat_integration.lua" type="shared" />
 
     <!-- Configuration -->
     <file src="commands.xml" />
@@ -30,6 +34,14 @@
     <export function="registerCustomCommand" type="server" />
     <export function="unregisterCustomCommand" type="server" />
     <export function="sendPositionToTarget" type="server" />
+
+    <!-- Additional exports for integration -->
+    <export function="registerChatResource" type="server" />
+    <export function="isResourceRegistered" type="server" />
+    <export function="getResourceChatOptions" type="server" />
+
+    <!-- Files that can be included by other resources -->
+    <include resource="chatmanager" />
 
     <!-- Settings -->
     <settings>

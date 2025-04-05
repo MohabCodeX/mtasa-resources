@@ -2,6 +2,7 @@
     <info author="AlienX" description="Team Death Match Arena" name="Team Death Match Arena" version="1" type="gamemode"/>
 	<include resource="killmessages" />
 	<include resource="scoreboard" />
+    <include resource="chatmanager" /> <!-- Added include for ChatManager -->
 
 	<!-- Load the core -->
 	<script src="Main/tdma_core.lua" type="server" />
@@ -12,6 +13,9 @@
 	<!-- Load additions -->
 	<script src="Additions/mission_timer.lua" type="server" />
 	<script src="Additions/team_identifcation.lua" type="client" />
+
+    <!-- Chat integration -->
+    <script src="Main/tdma_chat_bridge.lua" type="server" />
 
 	<!-- Load Spawn Protection -->
 	<script src="Spawn_Protection/spawn_protectionS.lua" type="server" />
@@ -24,4 +28,7 @@
 	<config src="help.xml" type="client"/>
 
     <map src="Main/tdma_core.map" />
+
+    <!-- Add dependency on ChatManager -->
+    <depend>chatmanager</depend>
 </meta>

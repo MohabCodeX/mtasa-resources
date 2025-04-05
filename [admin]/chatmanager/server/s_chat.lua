@@ -69,8 +69,33 @@ local function isVoiceMuted(player)
     return getElementData(player, "voice.muted") == true
 end
 
+-- Function to determine chat format based on player's team and gamemode
+function getPlayerChatFormat(player)
+    local team = getPlayerTeam(player)
+    local gamemode = "default"
+
+    -- Try to get gamemode from team data
+    if team then
+        local teamGamemode = getElementData(team, "gamemode")
+        if teamGamemode then
+            gamemode = teamGamemode
+        end
+    end
+
+    -- Define formats for different gamemodes
+    local formats = {
+        default = {useTeamColors = true, separator = ": "},
+        tdma = {useTeamColors = true, separator = ":#FFFFFF "},
+        freeroam = {useTeamColors = false, separator = ": "}
+        -- Add more gamemodes as needed
+    }
+
+    -- Always return a valid format (use default if gamemode not found)
+    return formats[gamemode] or formats.default
+end
+
 -- Process and forward chat messages
-local function handleChatMessage(player, messageType, message, receiver)
+function handleChatMessage(player, messageType, message, receiver)
     -- Check if chat is blocked for the player
     if getElementData(player, "chatmanager.chatBlocked") then
         outputChatBox("Your chat is currently blocked.", player, 255, 0, 0)
@@ -117,10 +142,36 @@ local function handleChatMessage(player, messageType, message, receiver)
     local coloredName = getColoredPlayerName(player)
 
     if messageType == 0 then -- Public chat
-        outputServerLog("CHAT: " .. getPlayerName(player) .. ": " .. message)
-        outputChatBox(coloredName .. ": " .. message, root, 255, 255, 255, true)
+        local team = getPlayerTeam(player)
+        local playerName = getPlayerName(player)
+        local r, g, b = 255, 255, 255 -- Default white text color
+
+        if team then
+            r, g, b = getTeamColor(team) -- Use team color for player name
+        end
+
+        -- Get chat format for the player's gamemode
+        local format = getPlayerChatFormat(player)
+        -- Ensure format is valid (defensive programming)
+        if not format then
+            format = {separator = ": ", useTeamColors = true}
+        end
+
+        local separator = format.separator or ": "
+        local useTeamColors = format.useTeamColors
+
+        -- Format message with player name in team color and white message text
+        if useTeamColors then
+            outputChatBox(string.format("#%.2X%.2X%.2X%s%s%s", r, g, b, playerName, separator, message), root, 255, 255, 255, true)
+        else
+            outputChatBox(playerName .. separator .. message, root, 255, 255, 255, true)
+        end
+
+        outputServerLog("CHAT: " .. playerName .. ": " .. message)
         return false
-    elseif messageType == 1 then -- Team chat
+    end
+
+    if messageType == 1 then -- Team chat
         local team = getPlayerTeam(player)
         if team then
             local teamPlayers = getPlayersInTeam(team)

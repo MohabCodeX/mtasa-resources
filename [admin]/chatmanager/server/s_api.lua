@@ -4,6 +4,9 @@
 -- Player mute status tracking
 local mutedPlayers = {}
 
+-- Store resources that have registered for chat integration
+local registeredResources = {}
+
 -- API Documentation
 --[[
 Functions exported by this resource:
@@ -20,6 +23,9 @@ Functions exported by this resource:
 - sendAdminAnnouncement(message, fromAdmin, receiver)
 - sendGamemodeMessage(message, messageType, receiver)
 - registerCompatibleResource(resourceName)
+- registerChatResource(resourceName, options)
+- isResourceRegistered(resourceName)
+- getResourceChatOptions(resourceName)
 ]]--
 
 -- Send a chat message from a player or system
@@ -243,6 +249,51 @@ function registerCompatibleResource(resourceName)
     -- Placeholder for tracking compatible resources
 end
 
+-- Register a resource to use the chat system
+function registerChatResource(resourceName, options)
+    if not resourceName then
+        resourceName = getResourceName(sourceResource or getThisResource())
+    end
+
+    local resource = getResourceFromName(resourceName)
+    if not resource then
+        outputDebugString("ChatManager: Failed to register resource '" .. resourceName .. "' - resource not found", 2)
+        return false
+    end
+
+    -- Default options
+    options = options or {}
+    options.formatPlayerName = options.formatPlayerName ~= false -- Default to true
+    options.useTeamColors = options.useTeamColors ~= false -- Default to true
+    options.stripColorCodes = options.stripColorCodes ~= false -- Default to true
+
+    registeredResources[resourceName] = {
+        resource = resource,
+        options = options
+    }
+
+    outputDebugString("ChatManager: Resource '" .. resourceName .. "' registered for chat integration")
+    return true
+end
+
+-- Check if a resource is registered for chat integration
+function isResourceRegistered(resourceName)
+    if not resourceName then
+        resourceName = getResourceName(sourceResource or getThisResource())
+    end
+
+    return registeredResources[resourceName] ~= nil
+end
+
+-- Get options for a registered resource
+function getResourceChatOptions(resourceName)
+    if not resourceName then
+        resourceName = getResourceName(sourceResource or getThisResource())
+    end
+
+    return registeredResources[resourceName] and registeredResources[resourceName].options or nil
+end
+
 -- Send an admin announcement to all players or a specific player
 -- message: The message text
 -- fromAdmin: Optional admin player who sent the message
@@ -303,4 +354,13 @@ end)
 addEventHandler("onPlayerQuit", root, function()
     local playerID = getElementData(source, "playerid") or getPlayerName(source)
     mutedPlayers[playerID] = nil
+end)
+
+-- Clean up when resources stop
+addEventHandler("onResourceStop", root, function(resource)
+    local resourceName = getResourceName(resource)
+    if registeredResources[resourceName] then
+        registeredResources[resourceName] = nil
+        outputDebugString("ChatManager: Resource '" .. resourceName .. "' unregistered from chat integration")
+    end
 end)

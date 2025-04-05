@@ -1,133 +1,84 @@
 # Voice & Chat Manager Integration Guide
 
-This document outlines how to implement voice chat integration with a chat manager system, specifically allowing you to check if players are voice-muted and potentially block their messages accordingly.
+This document outlines how to implement voice chat integration with ChatManager, specifically allowing you to check if players are voice-muted and potentially block their messages accordingly.
 
 ## Overview
 
-The voice resource provides several functions that can be used to check if a player is muted. These can be integrated with your chat manager to add features like:
+The voice resource provides several functions that can be used to check if a player is muted. With our new simplified ChatManager implementation, integrating voice features is even easier:
 
-- Blocking text messages from voice-muted players
-- Showing visual indicators for muted players in chat
-- Providing chat commands to manage voice settings
+- Block text messages from voice-muted players
+- Show visual indicators for muted players in chat
+- Use chat commands to manage voice settings
 
 ## Required Components
 
 1. Access to voice resource functions
-2. Chat event handlers to intercept messages
-3. Proper permissions checking
+2. Basic voice status checking
 
 ## Implementation Approach
 
-### 1. Checking Mute Status
+### 1. Checking Mute Status in ChatManager
 
-To check if a player is muted, use the following exports:
-
-```lua
--- Client-side: Check if a specific player is muted locally
-local isMuted = exports.voice:isPlayerVoiceMuted(playerToCheck)
-
--- Server-side: Check if a player is globally muted
-local isGloballyMuted = exports.voice:isPlayerVoiceMuted(playerToCheck)
-
--- Server-side: Get the list of players who muted a specific player
-local mutedByList = exports.voice:getPlayerVoiceMutedByList(playerToCheck)
-```
-
-### 2. Chat Manager Integration
-
-#### Intercepting Chat Messages
-
-Add an event handler for chat messages and check mute status:
+ChatManager now includes a simple voice mute check:
 
 ```lua
-addEventHandler("onPlayerChat", root, function(message, messageType)
-    -- Cancel the default event
-    cancelEvent()
-
-    -- Check if the player is muted
-    if exports.voice:isPlayerVoiceMuted(source) then
-        -- Option 1: Block the message completely
-        outputChatBox("Your message was not sent because you are muted.", source, 255, 0, 0)
-        return
-
-        -- Option 2: Only show the message to the sender
-        -- outputChatBox("You (muted): " .. message, source, 150, 150, 150)
-        -- return
+-- In ChatManager's s_chat.lua
+local function isVoiceMuted(player)
+    -- Check if voice resource exists and is running
+    if getResourceFromName("voice") and getResourceState(getResourceFromName("voice")) == "running" then
+        return exports.voice:isPlayerVoiceMuted(player)
     end
 
-    -- If not muted, process and display the message normally
-    -- Your regular chat processing code here
-end)
-```
-
-#### Adding Commands for Voice Control
-
-Implement chat commands to control voice settings:
-
-```lua
-function mutePlayerCommand(player, cmd, targetPlayerName)
-    if not targetPlayerName then
-        outputChatBox("Usage: /mutevoice [playerName]", player, 255, 255, 0)
-        return
-    end
-
-    local targetPlayer = getPlayerFromName(targetPlayerName)
-    if not targetPlayer then
-        outputChatBox("Player not found.", player, 255, 0, 0)
-        return
-    end
-
-    exports.voice:setPlayerVoiceMuted(targetPlayer, true)
-    outputChatBox("You muted " .. targetPlayerName, player, 255, 255, 0)
+    -- Fallback to element data check
+    return getElementData(player, "voice.muted") == true
 end
-addCommandHandler("mutevoice", mutePlayerCommand)
 
--- Similar implementation for unmutevoice command
+-- Use in message handling
+if isVoiceMuted(player) then
+    outputChatBox("Your message was not sent because you are voice-muted.", player, 255, 0, 0)
+    return false
+end
 ```
 
-### 3. Advanced Implementation
+### 2. Adding Visual Indicators for Muted Players
 
-#### Mute Levels
+```lua
+-- In message formatting function
+local function formatChatMessage(player, message)
+    local playerName = getPlayerName(player)
+    local team = getPlayerTeam(player)
+    local r, g, b = 255, 255, 255
 
-Consider implementing different levels of muting:
+    if team then
+        r, g, b = getTeamColor(team)
+    end
 
-1. **Voice Mute Only**: Player can't speak but can send chat messages
-2. **Chat Mute Only**: Player can speak but can't send chat messages
-3. **Full Mute**: Player can neither speak nor send chat messages
+    -- Add muted indicator
+    if isVoiceMuted(player) then
+        playerName = playerName .. " [MUTED]"
+    end
+
+    return string.format("#%.2X%.2X%.2X%s:#FFFFFF %s", r, g, b, playerName, message)
+end
+```
+
+### 3. Mute Level System
 
 ```lua
 function setPlayerMuteLevel(player, level)
     if level == 1 then -- Voice mute only
         exports.voice:setPlayerVoiceMuted(player, true)
-        setElementData(player, "chatMuted", false)
+        setElementData(player, "chatmanager.chatMuted", false)
     elseif level == 2 then -- Chat mute only
         exports.voice:setPlayerVoiceMuted(player, false)
-        setElementData(player, "chatMuted", true)
+        setElementData(player, "chatmanager.chatMuted", true)
     elseif level == 3 then -- Full mute
         exports.voice:setPlayerVoiceMuted(player, true)
-        setElementData(player, "chatMuted", true)
+        setElementData(player, "chatmanager.chatMuted", true)
     else -- No mute
         exports.voice:setPlayerVoiceMuted(player, false)
-        setElementData(player, "chatMuted", false)
+        setElementData(player, "chatmanager.chatMuted", false)
     end
-end
-```
-
-#### Visual Indicators
-
-Add visual indicators in chat for muted players:
-
-```lua
-function formatChatMessage(player, message)
-    local formattedMessage = message
-    local playerName = getPlayerName(player)
-
-    if exports.voice:isPlayerVoiceMuted(player) then
-        -- Add muted icon or text
-        playerName = playerName .. " [MUTED]"
-    end
-
-    return playerName, formattedMessage
 end
 ```
 
@@ -138,16 +89,17 @@ end
 3. **Team Communication**: Block messages from enemy team when using team chat
 4. **Channel-based Communication**: Only allow chat between players in the same voice channel
 
-## Compatibility Considerations
+## Compatibility with New ChatManager Implementation
 
-- Check if your server uses legacy voice functions and adapt accordingly
-- Consider resource load order to ensure voice resource is loaded before your chat manager
-- Test thoroughly to ensure voice states are preserved correctly across resource restarts
+Our new streamlined ChatManager makes voice integration even easier:
 
-## Performance Impact
+1. No special registration needed
+2. Works automatically with all gamemodes
+3. Mute status displayed consistently for everyone
+4. Simple implementation with direct voice exports
 
-The mute status checks are relatively lightweight, but consider:
+## Performance Considerations
 
-- Caching mute status for frequently checked players
-- Limiting complex operations (like getting the full mute list) to when necessary
-- Using element data for quick checks rather than exports when appropriate
+- Voice status checks are lightweight and performed only when needed
+- Element data can be used for quick status checks
+- No resource-specific integrations means better performance overall
