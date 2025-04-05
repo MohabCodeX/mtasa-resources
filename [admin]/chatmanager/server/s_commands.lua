@@ -390,8 +390,78 @@ local commandActions = {
 
                 -- Replace placeholders
                 message = message:gsub("{PLAYER}", getPlayerName(player))
-                for i, param in pairs(params) do
-                    message = message:gsub("{PARAM:" .. i .. "}", param)
+
+                -- Process all parameters with proper type handling
+                for paramName, paramValue in pairs(params) do
+                    local paramString = tostring(paramValue)
+
+                    -- For certain parameter types, we may want special formatting
+                    for _, param in ipairs(commandDef.parameters) do
+                        if param.name == paramName then
+                            if param.type == "player" then
+                                -- Try to get the actual player name if it's a partial match
+                                local targetPlayer = getPlayerFromPartialName(paramValue)
+                                if targetPlayer then
+                                    paramString = getPlayerName(targetPlayer)
+                                end
+                            elseif param.type == "team" then
+                                -- Try to get the proper team name
+                                for _, team in ipairs(getElementsByType("team")) do
+                                    if string.find(string.lower(getTeamName(team)), string.lower(paramValue)) then
+                                        paramString = getTeamName(team)
+                                        break
+                                    end
+                                end
+                            elseif param.type == "weapon" then
+                                -- Convert weapon ID to name if possible
+                                local weaponNames = {
+                                    [1] = "Brass Knuckles", [2] = "Golf Club", [3] = "Nightstick",
+                                    [4] = "Knife", [5] = "Baseball Bat", [6] = "Shovel",
+                                    [7] = "Pool Cue", [8] = "Katana", [9] = "Chainsaw",
+                                    [10] = "Purple Dildo", [11] = "Small White Vibrator", [12] = "Large White Vibrator",
+                                    [13] = "Silver Vibrator", [14] = "Flowers", [15] = "Cane",
+                                    [16] = "Grenade", [17] = "Tear Gas", [18] = "Molotov Cocktail",
+                                    [22] = "Pistol", [23] = "Silenced Pistol", [24] = "Desert Eagle",
+                                    [25] = "Shotgun", [26] = "Sawed-off Shotgun", [27] = "Combat Shotgun",
+                                    [28] = "Micro SMG", [29] = "MP5", [30] = "AK-47",
+                                    [31] = "M4", [32] = "Tec-9", [33] = "Country Rifle",
+                                    [34] = "Sniper Rifle", [35] = "Rocket Launcher", [36] = "Heat-Seeking Rocket Launcher",
+                                    [37] = "Flamethrower", [38] = "Minigun", [39] = "Remote Explosives",
+                                    [40] = "Detonator", [41] = "Spray Can", [42] = "Fire Extinguisher",
+                                    [43] = "Camera", [44] = "Night Vision Goggles", [45] = "Thermal Goggles",
+                                    [46] = "Parachute"
+                                }
+                                if tonumber(paramValue) and weaponNames[tonumber(paramValue)] then
+                                    paramString = weaponNames[tonumber(paramValue)]
+                                end
+                            elseif param.type == "vehicle" then
+                                -- Convert vehicle ID to name if possible (simplified example)
+                                local vehicleNames = {
+                                    [400] = "Landstalker", [401] = "Bravura", [402] = "Buffalo",
+                                    [403] = "Linerunner", [404] = "Perennial", [405] = "Sentinel"
+                                    -- Add more as needed or implement a full list
+                                }
+                                if tonumber(paramValue) and vehicleNames[tonumber(paramValue)] then
+                                    paramString = vehicleNames[tonumber(paramValue)]
+                                end
+                            elseif param.type == "number" then
+                                -- Ensure it's formatted as a number
+                                paramString = tostring(tonumber(paramValue))
+                            end
+                            break
+                        end
+                    end
+
+                    message = message:gsub("{PARAM:" .. paramName .. "}", paramString)
+                end
+
+                -- Support for numeric parameter placeholders (backward compatibility)
+                local index = 1
+                for _, param in ipairs(commandDef.parameters) do
+                    if params[param.name] then
+                        message = message:gsub("{PARAM:" .. index .. "}", tostring(params[param.name]))
+                        index = index + 1
+                    end
                 end
 
                 -- Parse color
@@ -446,15 +516,18 @@ local function hasCommandPermission(player, permission)
 end
 
 -- Parse parameter values from command arguments
-local function parseParameters(params, commandDef, cmd, ...)
+local function parseParameters(commandDef, cmd, ...)
     local args = {...}
     local result = {}
+
+    outputDebugString("ChatManager: Parsing parameters for command: " .. cmd .. ", args: " .. table.concat(args, ", "))
 
     local argIndex = 1
     for _, param in ipairs(commandDef.parameters or {}) do
         if param.type ~= "hidden" then
+            -- Handle different parameter types
             if param.type == "player" then
-                -- For player parameters
+                -- Player parameter - attempts to find a matching player
                 if args[argIndex] then
                     result[param.name] = args[argIndex]
                     argIndex = argIndex + 1
@@ -462,17 +535,104 @@ local function parseParameters(params, commandDef, cmd, ...)
                     return false -- Required parameter missing
                 end
             elseif param.type == "text" then
-                -- For text parameters (consumes all remaining arguments)
+                -- Text parameter - consumes all remaining arguments as one string
                 if argIndex <= #args then
                     result[param.name] = table.concat(args, " ", argIndex)
+                    outputDebugString("ChatManager: Set text parameter '" .. param.name .. "' to: " .. result[param.name])
                     argIndex = #args + 1
+                elseif not param.optional then
+                    outputDebugString("ChatManager: Missing required text parameter: " .. param.name)
+                    return false -- Required parameter missing
+                else
+                    result[param.name] = param.default or ""
+                    outputDebugString("ChatManager: Using default for text parameter: " .. param.name .. " = " .. result[param.name])
+                end
+            elseif param.type == "number" then
+                -- Number parameter - validates that it's a number
+                if args[argIndex] then
+                    local num = tonumber(args[argIndex])
+                    if num then
+                        result[param.name] = num
+                        argIndex = argIndex + 1
+                    else
+                        outputChatBox("Error: " .. param.name .. " must be a number", player, 255, 0, 0)
+                        return false -- Invalid number format
+                    end
+                elseif not param.optional then
+                    return false -- Required parameter missing
+                else
+                    result[param.name] = tonumber(param.default) or 0
+                end
+            elseif param.type == "string" then
+                -- String parameter - takes a single word
+                if args[argIndex] then
+                    result[param.name] = args[argIndex]
+                    argIndex = argIndex + 1
+                elseif not param.optional then
+                    return false -- Required parameter missing
+                else
+                    result[param.name] = param.default or ""
+                end
+            elseif param.type == "team" then
+                -- Team parameter - attempts to find a matching team
+                if args[argIndex] then
+                    local teamName = args[argIndex]
+                    local foundTeam = false
+
+                    -- Find team by name
+                    for _, team in ipairs(getElementsByType("team")) do
+                        if string.find(string.lower(getTeamName(team)), string.lower(teamName)) then
+                            result[param.name] = getTeamName(team)
+                            foundTeam = true
+                            break
+                        end
+                    end
+
+                    if not foundTeam then
+                        outputChatBox("Error: Team not found", player, 255, 0, 0)
+                        return false
+                    end
+
+                    argIndex = argIndex + 1
+                elseif not param.optional then
+                    return false -- Required parameter missing
+                else
+                    result[param.name] = param.default or ""
+                end
+            elseif param.type == "vehicle" then
+                -- Vehicle parameter - validates vehicle name/ID
+                if args[argIndex] then
+                    local vehicleID = tonumber(args[argIndex])
+                    if vehicleID and vehicleID >= 400 and vehicleID <= 611 then
+                        result[param.name] = vehicleID
+                    else
+                        -- Could implement vehicle name lookup here
+                        result[param.name] = args[argIndex]
+                    end
+                    argIndex = argIndex + 1
+                elseif not param.optional then
+                    return false -- Required parameter missing
+                else
+                    result[param.name] = param.default or ""
+                end
+            elseif param.type == "weapon" then
+                -- Weapon parameter - validates weapon name/ID
+                if args[argIndex] then
+                    local weaponID = tonumber(args[argIndex])
+                    if weaponID and weaponID >= 1 and weaponID <= 46 then
+                        result[param.name] = weaponID
+                    else
+                        -- Could implement weapon name lookup here
+                        result[param.name] = args[argIndex]
+                    end
+                    argIndex = argIndex + 1
                 elseif not param.optional then
                     return false -- Required parameter missing
                 else
                     result[param.name] = param.default or ""
                 end
             else
-                -- For other parameter types
+                -- Default handler for other parameter types
                 if args[argIndex] then
                     result[param.name] = args[argIndex]
                     argIndex = argIndex + 1
@@ -488,7 +648,24 @@ local function parseParameters(params, commandDef, cmd, ...)
         end
     end
 
+    outputDebugString("ChatManager: Parsed parameters result: " .. inspect(result))
     return result
+end
+
+-- Simple table inspection function for debugging
+function inspect(t)
+    if type(t) ~= "table" then return tostring(t) end
+    local result = "{"
+    for k, v in pairs(t) do
+        result = result .. tostring(k) .. "="
+        if type(v) == "table" then
+            result = result .. inspect(v)
+        else
+            result = result .. tostring(v)
+        end
+        result = result .. ", "
+    end
+    return result .. "}"
 end
 
 -- Process a command when executed
@@ -521,7 +698,6 @@ local function processCommand(player, cmd, ...)
     -- Check for command alias
     local commandName = commandAliases[cmd] or cmd
     local commandDef = commandDefinitions[commandName]
-
     if not commandDef then
         return -- Not our command
     end
@@ -532,7 +708,7 @@ local function processCommand(player, cmd, ...)
         return
     end
 
-    -- Parse parameters
+    -- Parse parameters - FIX: Pass the commandDef directly, not params
     local params = parseParameters(commandDef, cmd, ...)
     if params == false then
         outputChatBox("SYNTAX: /" .. cmd .. " " .. (commandDef.syntax or ""), player, 255, 255, 0)

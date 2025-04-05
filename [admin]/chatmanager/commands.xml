@@ -114,8 +114,60 @@
         <syntax>[message]</syntax>
         <helptext>Send a help request to online admins</helptext>
         <custom>
-            <message target="admins" color="#FFFF00">[HELP] {PLAYER} needs assistance: {PARAM:1}</message>
+            <message target="admins" color="#FFFF00">[HELP] {PLAYER} needs assistance: {PARAM:message}</message>
             <message target="sender" color="#FFFF00">Your help request was sent to admins</message>
+        </custom>
+    </command>
+
+    <command name="status" action="customMessage" description="Share your status with your team">
+        <parameter name="message" type="text" description="Status message" />
+        <permission>none</permission>
+        <syntax>[message]</syntax>
+        <helptext>Share your status with your team</helptext>
+        <custom>
+            <message target="team" color="#00FFFF">[STATUS] {PLAYER}: {PARAM:message}</message>
+            <message target="sender" color="#00FFFF">Status shared with your team</message>
+        </custom>
+    </command>
+
+    <!-- Example Commands for Testing Parameter Types -->
+    <command name="checkweapon" action="customMessage" description="Check weapon information">
+        <parameter name="weapon" type="number" description="Weapon ID or name" />
+        <permission>none</permission>
+        <syntax>[weapon]</syntax>
+        <helptext>Display information about a weapon</helptext>
+        <custom>
+            <message target="sender" color="#00FFFF">Weapon Information: {PARAM:weapon}</message>
+        </custom>
+    </command>
+
+    <command name="teaminfo" action="customMessage" description="Show team information">
+        <parameter name="team" type="team" description="Team name" optional="true" />
+        <permission>none</permission>
+        <syntax>[team]</syntax>
+        <helptext>Show information about a team</helptext>
+        <custom>
+            <message target="sender" color="#00FFFF">Team Information: {PARAM:team}</message>
+        </custom>
+    </command>
+
+    <command name="count" action="customMessage" description="Count to a number">
+        <parameter name="number" type="number" description="Number to count to" />
+        <permission>none</permission>
+        <syntax>[number]</syntax>
+        <helptext>Count up to a number</helptext>
+        <custom>
+            <message target="sender" color="#FFFF00">Counting to: {PARAM:number}</message>
+        </custom>
+    </command>
+
+    <command name="option" action="customMessage" description="Select an option">
+        <parameter name="choice" type="string" description="Option to select" />
+        <permission>none</permission>
+        <syntax>[choice]</syntax>
+        <helptext>Select from available options</helptext>
+        <custom>
+            <message target="sender" color="#FFFF00">You selected option: {PARAM:choice}</message>
         </custom>
     </command>
 </commands>
