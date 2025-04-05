@@ -391,68 +391,19 @@ local commandActions = {
                 -- Replace placeholders
                 message = message:gsub("{PLAYER}", getPlayerName(player))
 
-                -- Process all parameters with proper type handling
+                -- Get player ID (using getElementID or fallback to data storage)
+                local playerID = getElementID(player) or getElementData(player, "playerid") or "N/A"
+                message = message:gsub("{PLAYERID}", tostring(playerID))
+
+                -- Get player location (combine zone name and coordinates)
+                local x, y, z = getElementPosition(player)
+                local zoneName = getZoneName(x, y, z)
+                local locationText = zoneName .. " (" .. math.floor(x) .. ", " .. math.floor(y) .. ", " .. math.floor(z) .. ")"
+                message = message:gsub("{LOCATION}", locationText)
+
+                -- Process all parameters
                 for paramName, paramValue in pairs(params) do
-                    local paramString = tostring(paramValue)
-
-                    -- For certain parameter types, we may want special formatting
-                    for _, param in ipairs(commandDef.parameters) do
-                        if param.name == paramName then
-                            if param.type == "player" then
-                                -- Try to get the actual player name if it's a partial match
-                                local targetPlayer = getPlayerFromPartialName(paramValue)
-                                if targetPlayer then
-                                    paramString = getPlayerName(targetPlayer)
-                                end
-                            elseif param.type == "team" then
-                                -- Try to get the proper team name
-                                for _, team in ipairs(getElementsByType("team")) do
-                                    if string.find(string.lower(getTeamName(team)), string.lower(paramValue)) then
-                                        paramString = getTeamName(team)
-                                        break
-                                    end
-                                end
-                            elseif param.type == "weapon" then
-                                -- Convert weapon ID to name if possible
-                                local weaponNames = {
-                                    [1] = "Brass Knuckles", [2] = "Golf Club", [3] = "Nightstick",
-                                    [4] = "Knife", [5] = "Baseball Bat", [6] = "Shovel",
-                                    [7] = "Pool Cue", [8] = "Katana", [9] = "Chainsaw",
-                                    [10] = "Purple Dildo", [11] = "Small White Vibrator", [12] = "Large White Vibrator",
-                                    [13] = "Silver Vibrator", [14] = "Flowers", [15] = "Cane",
-                                    [16] = "Grenade", [17] = "Tear Gas", [18] = "Molotov Cocktail",
-                                    [22] = "Pistol", [23] = "Silenced Pistol", [24] = "Desert Eagle",
-                                    [25] = "Shotgun", [26] = "Sawed-off Shotgun", [27] = "Combat Shotgun",
-                                    [28] = "Micro SMG", [29] = "MP5", [30] = "AK-47",
-                                    [31] = "M4", [32] = "Tec-9", [33] = "Country Rifle",
-                                    [34] = "Sniper Rifle", [35] = "Rocket Launcher", [36] = "Heat-Seeking Rocket Launcher",
-                                    [37] = "Flamethrower", [38] = "Minigun", [39] = "Remote Explosives",
-                                    [40] = "Detonator", [41] = "Spray Can", [42] = "Fire Extinguisher",
-                                    [43] = "Camera", [44] = "Night Vision Goggles", [45] = "Thermal Goggles",
-                                    [46] = "Parachute"
-                                }
-                                if tonumber(paramValue) and weaponNames[tonumber(paramValue)] then
-                                    paramString = weaponNames[tonumber(paramValue)]
-                                end
-                            elseif param.type == "vehicle" then
-                                -- Convert vehicle ID to name if possible (simplified example)
-                                local vehicleNames = {
-                                    [400] = "Landstalker", [401] = "Bravura", [402] = "Buffalo",
-                                    [403] = "Linerunner", [404] = "Perennial", [405] = "Sentinel"
-                                    -- Add more as needed or implement a full list
-                                }
-                                if tonumber(paramValue) and vehicleNames[tonumber(paramValue)] then
-                                    paramString = vehicleNames[tonumber(paramValue)]
-                                end
-                            elseif param.type == "number" then
-                                -- Ensure it's formatted as a number
-                                paramString = tostring(tonumber(paramValue))
-                            end
-                            break
-                        end
-                    end
-
-                    message = message:gsub("{PARAM:" .. paramName .. "}", paramString)
+                    message = message:gsub("{PARAM:" .. paramName .. "}", tostring(paramValue))
                 end
 
                 -- Support for numeric parameter placeholders (backward compatibility)
@@ -468,10 +419,10 @@ local commandActions = {
                 local r, g, b = 255, 255, 255
                 if msgDef.color then
                     local color = msgDef.color
-                    if color:sub(1,1) == "#" then
-                        r = tonumber("0x"..color:sub(2,3)) or 255
-                        g = tonumber("0x"..color:sub(4,5)) or 255
-                        b = tonumber("0x"..color:sub(6,7)) or 255
+                    if color:sub(1, 1) == "#" then
+                        r = tonumber("0x" .. color:sub(2, 3)) or 255
+                        g = tonumber("0x" .. color:sub(4, 5)) or 255
+                        b = tonumber("0x" .. color:sub(6, 7)) or 255
                     end
                 end
 
@@ -479,7 +430,6 @@ local commandActions = {
                 if msgDef.target == "all" then
                     outputChatBox(message, root, r, g, b, true)
                 elseif msgDef.target == "admins" then
-                    -- Send to all admins
                     local admins = getElementsByType("player")
                     for _, admin in ipairs(admins) do
                         if hasObjectPermissionTo(admin, "command.mute", false) then

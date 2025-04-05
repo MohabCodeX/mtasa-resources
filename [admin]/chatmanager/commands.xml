@@ -170,4 +170,68 @@
             <message target="sender" color="#FFFF00">You selected option: {PARAM:choice}</message>
         </custom>
     </command>
+
+    <!-- Role-Based Communication -->
+    <command name="radio" action="customMessage" description="Send a message over police radio">
+        <parameter name="message" type="text" description="Radio message" />
+        <permission>police.radio</permission>
+        <syntax>[message]</syntax>
+        <helptext>Send a message to your team's radio channel</helptext>
+        <custom>
+            <message target="team" color="#3498db">[POLICE RADIO] {PLAYER}: {PARAM:message}</message>
+            <message target="sender" color="#3498db">Message sent on police frequency</message>
+        </custom>
+    </command>
+
+    <!-- Location-Aware Messages -->
+    <command name="911" action="customMessage" description="Call emergency services">
+        <parameter name="message" type="text" description="Emergency" />
+        <permission>none</permission>
+        <syntax>[message]</syntax>
+        <helptext>Send an emergency message to admins</helptext>
+        <custom>
+            <message target="admins" color="#ff0000">[911] {PLAYER} at {LOCATION}: {PARAM:message}</message>
+            <message target="sender" color="#ff0000">Emergency call sent. Help is on the way.</message>
+        </custom>
+    </command>
+
+    <!-- Administrative Tools -->
+    <command name="adminhelp" action="customMessage" description="Request help from admins">
+        <parameter name="message" type="text" description="Help request" />
+        <permission>none</permission>
+        <syntax>[message]</syntax>
+        <helptext>Request assistance from online admins</helptext>
+        <custom>
+            <message target="admins" color="#ff9900">[ADMIN HELP] {PLAYER} ({PLAYERID}): {PARAM:message}</message>
+            <message target="sender" color="#ff9900">Your request has been sent to online admins.</message>
+        </custom>
+    </command>
+
+    <!-- Context-Specific Announcements -->
+    <command name="event" action="customMessage" description="Announce an event">
+        <parameter name="title" type="string" description="Event title" />
+        <parameter name="details" type="text" description="Event details" />
+        <permission>command.mute</permission>
+        <syntax>[title] [details]</syntax>
+        <helptext>Announce an event to all players</helptext>
+        <custom>
+            <message target="all" color="#9b59b6">
+[EVENT] {PARAM:title}
+Location: Central Park
+Details: {PARAM:details}
+Host: {PLAYER}
+            </message>
+        </custom>
+    </command>
+
+    <!-- Team Coordination -->
+    <command name="tactics" action="customMessage" description="Share tactical information">
+        <parameter name="message" type="text" description="Tactical information" />
+        <permission>none</permission>
+        <syntax>[message]</syntax>
+        <helptext>Share tactical information with your team</helptext>
+        <custom>
+            <message target="team" color="#27ae60">[TACTICS] {PLAYER}: {PARAM:message}</message>
+        </custom>
+    </command>
 </commands>
