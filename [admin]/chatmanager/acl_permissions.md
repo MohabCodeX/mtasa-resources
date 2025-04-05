@@ -40,6 +40,15 @@ These permissions must be granted to the ChatManager resource:
     <right name="function.getThisResource" access="true"></right>
     <right name="function.getResourceName" access="true"></right>
     <right name="function.getResourceFromName" access="true"></right>
+
+    <!-- Emergency blip functions -->
+    <right name="function.createBlip" access="true"></right>
+    <right name="function.destroyElement" access="true"></right>
+    <right name="function.setElementPosition" access="true"></right>
+    <right name="function.attachElementToDimension" access="true"></right>
+    <right name="function.getElementPosition" access="true"></right>
+    <right name="function.getZoneName" access="true"></right>
+    <right name="function.getElementDimension" access="true"></right>
 </acl>
 ```
 

@@ -397,8 +397,12 @@ local commandActions = {
 
                 -- Get player location (combine zone name and coordinates)
                 local x, y, z = getElementPosition(player)
-                local zoneName = getZoneName(x, y, z)
-                local locationText = zoneName .. " (" .. math.floor(x) .. ", " .. math.floor(y) .. ", " .. math.floor(z) .. ")"
+                -- Make sure coordinates are valid before using math.floor
+                local locationText = "Unknown"
+                if x and y and z then
+                    local zoneName = getZoneName(x, y, z) or "Unknown"
+                    locationText = zoneName .. " (" .. math.floor(x) .. ", " .. math.floor(y) .. ", " .. math.floor(z) .. ")"
+                end
                 message = message:gsub("{LOCATION}", locationText)
 
                 -- Process all parameters
@@ -447,6 +451,50 @@ local commandActions = {
                 elseif msgDef.target == "sender" then
                     outputChatBox(message, player, r, g, b, true)
                 end
+            end
+
+            -- Handle location tracking for emergency calls
+            if type(commandDef.custom.tracking) == "table" and commandDef.custom.tracking.enabled == "true" then
+                local trackingType = commandDef.custom.tracking.type
+                if trackingType then
+                    -- Replace any parameter placeholders in the tracking type
+                    for paramName, paramValue in pairs(params) do
+                        trackingType = trackingType:gsub("{PARAM:" .. paramName .. "}", tostring(paramValue))
+                    end
+                else
+                    trackingType = "static" -- Default to static if not specified
+                end
+
+                local duration = tonumber(commandDef.custom.tracking.duration) or 300
+
+                -- Generate a unique emergency ID
+                local emergencyId = getTickCount() + math.random(10000)
+
+                -- Get player position and handle potential nil values
+                local x, y, z = getElementPosition(player)
+                if not (x and y and z) then
+                    x, y, z = 0, 0, 0 -- Fallback position if coordinates are nil
+                end
+
+                -- Send tracking info to admins
+                local admins = getElementsByType("player")
+                for _, admin in ipairs(admins) do
+                    if hasObjectPermissionTo(admin, "command.mute", false) then
+                        outputDebugString("ChatManager: Sending blip to admin " .. getPlayerName(admin) .. " with type " .. trackingType)
+                        triggerClientEvent(admin, "chatmanager:createEmergencyBlip", admin,
+                            emergencyId, trackingType, player, getPlayerName(player), x, y, z)
+                    end
+                end
+
+                -- Notify server console (with nil checks for logging)
+                local zoneName = "Unknown"
+                if x and y and z then
+                    zoneName = getZoneName(x, y, z) or "Unknown"
+                end
+
+                outputServerLog("EMERGENCY: " .. getPlayerName(player) .. " called 911 at " ..
+                    zoneName .. " (" .. math.floor(x) .. ", " .. math.floor(y) .. ", " ..
+                    math.floor(z) .. "). Tracking type: " .. trackingType)
             end
         end
     end
@@ -723,6 +771,12 @@ local function loadCommands()
                                     target = xmlNodeGetAttribute(customNode, "target") or "all",
                                     color = xmlNodeGetAttribute(customNode, "color") or "#FFFFFF"
                                 })
+                            elseif xmlNodeGetName(customNode) == "tracking" then
+                                command.custom.tracking = {
+                                    enabled = xmlNodeGetAttribute(customNode, "enabled") or "false",
+                                    type = xmlNodeGetAttribute(customNode, "type") or "static",
+                                    duration = xmlNodeGetAttribute(customNode, "duration") or "300"
+                                }
                             end
                         end
                     end

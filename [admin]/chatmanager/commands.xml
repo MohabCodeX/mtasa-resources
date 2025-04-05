@@ -186,12 +186,28 @@
     <!-- Location-Aware Messages -->
     <command name="911" action="customMessage" description="Call emergency services">
         <parameter name="message" type="text" description="Emergency" />
+        <parameter name="trackingType" type="hidden" default="static" />
         <permission>none</permission>
         <syntax>[message]</syntax>
         <helptext>Send an emergency message to admins</helptext>
         <custom>
             <message target="admins" color="#ff0000">[911] {PLAYER} at {LOCATION}: {PARAM:message}</message>
             <message target="sender" color="#ff0000">Emergency call sent. Help is on the way.</message>
+            <tracking enabled="true" type="{PARAM:trackingType}" duration="300" />
+        </custom>
+    </command>
+
+    <!-- Add a variant for real-time tracking -->
+    <command name="911live" action="customMessage" description="Call emergency services with live location tracking">
+        <parameter name="message" type="text" description="Emergency" />
+        <parameter name="trackingType" type="hidden" default="realtime" />
+        <permission>none</permission>
+        <syntax>[message]</syntax>
+        <helptext>Send an emergency message to admins with live location tracking</helptext>
+        <custom>
+            <message target="admins" color="#ff0000">[911 LIVE] {PLAYER} at {LOCATION}: {PARAM:message}</message>
+            <message target="sender" color="#ff0000">Emergency call sent with LIVE location tracking. Help is on the way.</message>
+            <tracking enabled="true" type="{PARAM:trackingType}" duration="60" />
         </custom>
     </command>
 

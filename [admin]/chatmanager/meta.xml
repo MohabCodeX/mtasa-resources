@@ -6,6 +6,7 @@
     <script src="server/s_api.lua" type="server" />
     <script src="server/s_commands.lua" type="server" />
     <script src="client/c_chat.lua" type="client" cache="false" />
+    <script src="client/c_emergency.lua" type="client" cache="false" />
     <script src="shared/settings.lua" type="shared" />
 
     <!-- Configuration -->
