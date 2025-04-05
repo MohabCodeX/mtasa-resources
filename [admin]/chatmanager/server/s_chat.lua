@@ -7,7 +7,7 @@ local lastMessageFrom = {}
 
 -- Function to get player name with appropriate color
 local function getColoredPlayerName(player)
-    local r, g, b = 255, 255, 255 -- Default white
+    local r, g, b = 211, 174, 154 -- Default color D3AE9A for non-teamed players
 
     local useNametagColors = getSettingValue("use_nametag_colors")
     local useTeamColors = getSettingValue("use_team_colors")
@@ -28,7 +28,8 @@ local function getColoredPlayerName(player)
         return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
     end
 
-    return getPlayerName(player)
+    -- Return with default color for non-teamed players
+    return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
 end
 
 -- Check if a message is spam
@@ -144,7 +145,7 @@ function handleChatMessage(player, messageType, message, receiver)
     if messageType == 0 then -- Public chat
         local team = getPlayerTeam(player)
         local playerName = getPlayerName(player)
-        local r, g, b = 255, 255, 255 -- Default white text color
+        local r, g, b = 211, 174, 154 -- Default D3AE9A for non-teamed players
 
         if team then
             r, g, b = getTeamColor(team) -- Use team color for player name
@@ -157,14 +158,16 @@ function handleChatMessage(player, messageType, message, receiver)
             format = {separator = ": ", useTeamColors = true}
         end
 
-        local separator = format.separator or ": "
+        -- Always use a separator that enforces white text for the message
+        local separator = ":#FFFFFF "
         local useTeamColors = format.useTeamColors
 
-        -- Format message with player name in team color and white message text
+        -- Format message with player name in team color and ALWAYS white message text
         if useTeamColors then
             outputChatBox(string.format("#%.2X%.2X%.2X%s%s%s", r, g, b, playerName, separator, message), root, 255, 255, 255, true)
         else
-            outputChatBox(playerName .. separator .. message, root, 255, 255, 255, true)
+            -- For non-team players, use D3AE9A color
+            outputChatBox(string.format("#D3AE9A%s%s%s", playerName, separator, message), root, 255, 255, 255, true)
         end
 
         outputServerLog("CHAT: " .. playerName .. ": " .. message)

@@ -60,11 +60,18 @@ function sendChatMessage(player, message, messageType, receiver)
     end
 
     -- Format message like in s_chat.lua
-    local coloredName = getColoredPlayerName(player)
+    local playerName = getPlayerName(player)
+    local team = getPlayerTeam(player)
+    local r, g, b = 211, 174, 154 -- Default D3AE9A for non-teamed players
+
+    if team then
+        r, g, b = getTeamColor(team) -- Use team color for player name
+    end
 
     if messageType == 0 then -- Public chat
-        outputServerLog("CHAT: " .. getPlayerName(player) .. ": " .. message)
-        outputChatBox(coloredName .. ": " .. message, receiver or root, 255, 255, 255, true)
+        outputServerLog("CHAT: " .. playerName .. ": " .. message)
+        -- Always use white color for message text
+        outputChatBox(string.format("#%.2X%.2X%.2X%s:#FFFFFF %s", r, g, b, playerName, message), receiver or root, 255, 255, 255, true)
         return true
     elseif messageType == 1 then -- Team chat
         local team = getPlayerTeam(player)
@@ -75,7 +82,7 @@ function sendChatMessage(player, message, messageType, receiver)
             local targetPlayers = receiver and {receiver} or teamPlayers
             for _, teamPlayer in ipairs(targetPlayers) do
                 if not receiver or (getPlayerTeam(receiver) == team) then
-                    outputChatBox("(TEAM) " .. coloredName .. ": " .. message, teamPlayer, 255, 255, 255, true)
+                    outputChatBox("(TEAM) " .. getColoredPlayerName(player) .. ": " .. message, teamPlayer, 255, 255, 255, true)
                 end
             end
             return true
@@ -120,7 +127,7 @@ end
 -- player: The player element
 -- Returns: Player name with color formatting
 function getColoredPlayerName(player)
-    local r, g, b = 255, 255, 255 -- Default white
+    local r, g, b = 211, 174, 154 -- Default D3AE9A for non-teamed players
 
     local useNametagColors = getSettingValue("use_nametag_colors")
     local useTeamColors = getSettingValue("use_team_colors")
@@ -141,7 +148,8 @@ function getColoredPlayerName(player)
         return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
     end
 
-    return getPlayerName(player)
+    -- Return with default color for non-teamed players
+    return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
 end
 
 -- Send a private message from one player to another

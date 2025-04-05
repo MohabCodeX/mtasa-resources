@@ -49,6 +49,7 @@ For the TDMA gamemode, we identified and resolved these issues:
 ### Solution Applied to TDMA
 
 1. **Removed Chat Handler**:
+
    ```lua
    -- Removed all chat handling code from TDMA
    ```
