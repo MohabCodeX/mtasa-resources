@@ -1,0 +1,121 @@
+<commands>
+    <!-- Player Commands -->
+    <command name="pm" alias="msg,whisper" action="privateMessage" description="Send a private message to another player">
+        <parameter name="target" type="player" description="Player to send message to" />
+        <parameter name="message" type="text" description="Message to send" />
+        <permission>none</permission>
+        <syntax>[player] [message]</syntax>
+        <helptext>Send a private message to another player</helptext>
+    </command>
+
+    <command name="reply" action="replyLastMessage" description="Reply to the last private message">
+        <parameter name="message" type="text" description="Message to send" />
+        <permission>none</permission>
+        <syntax>[message]</syntax>
+        <helptext>Reply to the last person who sent you a message</helptext>
+    </command>
+
+    <command name="togglefilter" action="toggleSetting" description="Toggle chat filter">
+        <parameter name="setting" type="hidden" default="useFilter" />
+        <permission>none</permission>
+        <syntax></syntax>
+        <helptext>Toggle the chat filter on/off</helptext>
+    </command>
+
+    <command name="togglechat" action="toggleSetting" description="Toggle chat blocking">
+        <parameter name="setting" type="hidden" default="chatBlocked" />
+        <permission>none</permission>
+        <syntax></syntax>
+        <helptext>Toggle chat messages on/off</helptext>
+    </command>
+
+    <!-- Team Leader Commands -->
+    <command name="tannounce" action="teamAnnounce" description="Send an announcement to your team">
+        <parameter name="message" type="text" description="Announcement to send" />
+        <permission>teamleader</permission>
+        <syntax>[message]</syntax>
+        <helptext>Send an announcement to all players in your team</helptext>
+    </command>
+
+    <!-- Admin Commands - Chat Moderation -->
+    <command name="mute" action="mutePlayer" description="Mute a player">
+        <parameter name="target" type="player" description="Player to mute" />
+        <parameter name="reason" type="text" description="Reason for mute" optional="true" default="No reason specified" />
+        <permission>command.mute</permission>
+        <syntax>[player] [reason]</syntax>
+        <helptext>Mute a player to prevent them from chatting</helptext>
+    </command>
+
+    <command name="unmute" action="unmutePlayer" description="Unmute a player">
+        <parameter name="target" type="player" description="Player to unmute" />
+        <permission>command.mute</permission>
+        <syntax>[player]</syntax>
+        <helptext>Unmute a previously muted player</helptext>
+    </command>
+
+    <command name="mutelist" action="listMutedPlayers" description="Show list of muted players">
+        <permission>command.mute</permission>
+        <syntax></syntax>
+        <helptext>Display a list of all currently muted players</helptext>
+    </command>
+
+    <command name="clearchat" action="clearChat" description="Clear chat messages">
+        <parameter name="target" type="text" description="Target (all or none)" optional="true" />
+        <permission>command.mute</permission>
+        <syntax>[all]</syntax>
+        <helptext>Clear chat messages for yourself or all players</helptext>
+    </command>
+
+    <command name="announce" action="adminAnnounce" description="Send an admin announcement">
+        <parameter name="message" type="text" description="Announcement to send" />
+        <permission>command.mute</permission>
+        <syntax>[message]</syntax>
+        <helptext>Send a server-wide admin announcement</helptext>
+    </command>
+
+    <command name="system" action="systemMessage" description="Send a system message">
+        <parameter name="message" type="text" description="Message to send" />
+        <permission>command.mute</permission>
+        <syntax>[message]</syntax>
+        <helptext>Send a system message to all players</helptext>
+    </command>
+
+    <!-- Admin Commands - Filter Management -->
+    <command name="addfilterword" action="addFilterWord" description="Add a word to the chat filter">
+        <parameter name="word" type="text" description="Word to filter" />
+        <permission>command.kick</permission>
+        <syntax>[word]</syntax>
+        <helptext>Add a word to the chat filter</helptext>
+    </command>
+
+    <command name="removefilterword" action="removeFilterWord" description="Remove a word from the chat filter">
+        <parameter name="word" type="text" description="Word to remove from filter" />
+        <permission>command.kick</permission>
+        <syntax>[word]</syntax>
+        <helptext>Remove a word from the chat filter</helptext>
+    </command>
+
+    <command name="filterlist" action="listFilterWords" description="Show list of filtered words">
+        <permission>command.mute</permission>
+        <syntax></syntax>
+        <helptext>Display a list of all custom filtered words</helptext>
+    </command>
+
+    <command name="reloadfilter" action="reloadFilter" description="Reload the chat filter">
+        <permission>command.mute</permission>
+        <syntax></syntax>
+        <helptext>Reload the chat filter (clears custom words)</helptext>
+    </command>
+
+    <!-- Custom Commands Example -->
+    <command name="helpme" action="customMessage" description="Request help from admins">
+        <parameter name="message" type="text" description="Help request" />
+        <permission>none</permission>
+        <syntax>[message]</syntax>
+        <helptext>Send a help request to online admins</helptext>
+        <custom>
+            <message target="admins" color="#FFFF00">[HELP] {PLAYER} needs assistance: {PARAM:1}</message>
+            <message target="sender" color="#FFFF00">Your help request was sent to admins</message>
+        </custom>
+    </command>
+</commands>
