@@ -48,9 +48,12 @@ function registerCustomCommand(commandName, handlerFunction, requiredPermission)
                     return
                 end
 
+                -- Capture arguments
+                local args = {...}
+
                 -- Call the custom handler
                 local success, error = pcall(function()
-                    commandData.handler(player, cmd, ...)
+                    commandData.handler(player, cmd, unpack(args))
                 end)
 
                 if not success then
@@ -500,9 +503,12 @@ local function processCommand(player, cmd, ...)
             return
         end
 
+        -- Capture arguments
+        local args = {...}
+
         -- Call the custom handler
         local success, error = pcall(function()
-            externalCommand.handler(player, cmd, ...)
+            externalCommand.handler(player, cmd, unpack(args))
         end)
 
         if not success then

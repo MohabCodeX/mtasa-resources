@@ -20,3 +20,8 @@
 editor_dump/
 editor_test/
 editor_map_backups/
+
+
+#my scripts
+test/
+debugGUI/
