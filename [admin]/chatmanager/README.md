@@ -86,6 +86,53 @@ Context-specific messages for gamemodes (objectives, announcements, etc.). Can b
 exports.chatmanager:sendGamemodeMessage("Capture the enemy flag!", "objective")
 ```
 
+## Position Sharing
+
+ChatManager includes a simple position sharing system to allow players to share their current location:
+
+### Using the /sendpos Command
+
+The `/sendpos` command allows players to share their current position with:
+
+- A specific player
+- Their team
+- All online admins
+
+#### Syntax:
+
+```
+/sendpos [player/team/admins] [optional message]
+```
+
+#### Examples:
+
+- `/sendpos John` - Share your position with player named John
+- `/sendpos team` - Share your position with all members of your team
+- `/sendpos admins Need help here` - Share your position with admins along with a message
+
+#### Output Format:
+
+Recipients will see a message like:
+
+```
+[LOCATION] PlayerName is at Zone (X, Y, Z) (optional message)
+```
+
+### Programmatically Sharing Positions
+
+Other resources can use the exported `sendPositionToTarget` function:
+
+```lua
+exports.chatmanager:sendPositionToTarget(player, targetType, targetName, message)
+```
+
+Parameters:
+
+- `player`: The player element whose position will be shared
+- `targetType`: Can be "player", "team", or "admins"
+- `targetName`: The player name (when targetType is "player")
+- `message`: Optional message to include
+
 ## API for Other Resources
 
 Chat Manager exports the following functions that can be used by other resources:

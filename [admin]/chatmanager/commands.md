@@ -14,6 +14,13 @@ These commands are available to all players on the server.
 | `/reply`        | Reply to the last person who sent you a private message | `/reply [message]`            | `/reply Yes, I'm here`         |
 | `/togglefilter` | Toggle the chat filter on/off for yourself              | `/togglefilter`               | `/togglefilter`                |
 | `/togglechat`   | Toggle chat blocking on/off for yourself                | `/togglechat`                 | `/togglechat`                  |
+| `/sendpos`      | Share your current position with others                 | `/sendpos [target] [message]` | `/sendpos John Meet me here`   |
+
+For the `/sendpos` command, the target can be:
+
+- A player name - Sends to that specific player
+- "team" - Sends to all players in your team
+- "admins" - Sends to all online admins
 
 ## Team Leader Commands
 
@@ -67,33 +74,18 @@ The Chat Manager uses MTA's built-in ACL system for command permissions:
 4. **Admin Filter Management Commands**
    - Requires "command.kick" permission
 
-## Command Configuration
+## Examples of Using /sendpos
 
-All commands are hardcoded in the Chat Manager resource and cannot be changed without modifying the code. However, you can use ACL to control which groups have access to the administrative commands.
+1. **Sending location to specific player:**
 
-Example ACL configuration:
+   - `/sendpos John I'm waiting here for you`
+   - Result for John: "[LOCATION] YourName is at Downtown (123, 456, 789) (I'm waiting here for you)"
 
-```xml
-<acl>
-    <group name="Moderator">
-        <object name="resource.chatmanager" />
-        <right name="command.mute" access="true" />
-    </group>
-    <group name="Admin">
-        <object name="resource.chatmanager" />
-        <right name="command.mute" access="true" />
-        <right name="command.kick" access="true" />
-    </group>
-</acl>
-```
+2. **Sending location to team:**
 
-## Troubleshooting
+   - `/sendpos team Found a vehicle here`
+   - Result for team: "[LOCATION] YourName is at Beach (234, 567, 890) (Found a vehicle here)"
 
-If you're having trouble with commands:
-
-1. Check if you have the required permissions in the server's ACL
-2. Ensure you're using the correct syntax for the command
-3. Check the server console for any error messages
-4. Make sure the Chat Manager resource is running
-
-For further assistance, please contact your server administrator.
+3. **Sending location to all admins:**
+   - `/sendpos admins Need help with a player`
+   - Result for admins: "[LOCATION] YourName is at Airport (345, 678, 901) (Need help with a player)"

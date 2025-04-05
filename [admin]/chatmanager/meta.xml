@@ -6,7 +6,6 @@
     <script src="server/s_api.lua" type="server" />
     <script src="server/s_commands.lua" type="server" />
     <script src="client/c_chat.lua" type="client" cache="false" />
-    <script src="client/c_emergency.lua" type="client" cache="false" />
     <script src="shared/settings.lua" type="shared" />
 
     <!-- Configuration -->
@@ -30,6 +29,7 @@
     <export function="registerCompatibleResource" type="server" />
     <export function="registerCustomCommand" type="server" />
     <export function="unregisterCustomCommand" type="server" />
+    <export function="sendPositionToTarget" type="server" />
 
     <!-- Settings -->
     <settings>
@@ -79,5 +79,7 @@
         <right name="function.getPlayersInTeam" access="true" />
         <right name="function.setElementData" access="true" />
         <right name="function.getElementData" access="true" />
+        <right name="function.getElementPosition" access="true" />
+        <right name="function.getZoneName" access="true" />
     </aclrequest>
 </meta>

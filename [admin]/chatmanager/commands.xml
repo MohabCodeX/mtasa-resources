@@ -29,6 +29,18 @@
         <helptext>Toggle chat messages on/off</helptext>
     </command>
 
+    <!-- Position Sharing Command -->
+    <command name="sendpos" action="sharePosition" description="Share your current position with a player, team, or admins">
+        <parameter name="receiver" type="string" description="PlayerID, PlayerName, 'team', or 'admins'" />
+        <parameter name="message" type="text" description="Optional message" optional="true" default="" />
+        <permission>none</permission>
+        <syntax>[player/team/admins] [optional message]</syntax>
+        <helptext>Share your current location with a player, your team, or all admins</helptext>
+        <custom>
+            <message target="receiver" color="#00CCFF">[LOCATION] {PLAYER} is at {LOCATION} ({PARAM:message})</message>
+        </custom>
+    </command>
+
     <!-- Team Leader Commands -->
     <command name="tannounce" action="teamAnnounce" description="Send an announcement to your team">
         <parameter name="message" type="text" description="Announcement to send" />
@@ -180,34 +192,6 @@
         <custom>
             <message target="team" color="#3498db">[POLICE RADIO] {PLAYER}: {PARAM:message}</message>
             <message target="sender" color="#3498db">Message sent on police frequency</message>
-        </custom>
-    </command>
-
-    <!-- Location-Aware Messages -->
-    <command name="911" action="customMessage" description="Call emergency services">
-        <parameter name="message" type="text" description="Emergency" />
-        <parameter name="trackingType" type="hidden" default="static" />
-        <permission>none</permission>
-        <syntax>[message]</syntax>
-        <helptext>Send an emergency message to admins</helptext>
-        <custom>
-            <message target="admins" color="#ff0000">[911] {PLAYER} at {LOCATION}: {PARAM:message}</message>
-            <message target="sender" color="#ff0000">Emergency call sent. Help is on the way.</message>
-            <tracking enabled="true" type="{PARAM:trackingType}" duration="300" />
-        </custom>
-    </command>
-
-    <!-- Add a variant for real-time tracking -->
-    <command name="911live" action="customMessage" description="Call emergency services with live location tracking">
-        <parameter name="message" type="text" description="Emergency" />
-        <parameter name="trackingType" type="hidden" default="realtime" />
-        <permission>none</permission>
-        <syntax>[message]</syntax>
-        <helptext>Send an emergency message to admins with live location tracking</helptext>
-        <custom>
-            <message target="admins" color="#ff0000">[911 LIVE] {PLAYER} at {LOCATION}: {PARAM:message}</message>
-            <message target="sender" color="#ff0000">Emergency call sent with LIVE location tracking. Help is on the way.</message>
-            <tracking enabled="true" type="{PARAM:trackingType}" duration="60" />
         </custom>
     </command>
 

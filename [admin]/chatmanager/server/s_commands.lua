@@ -383,6 +383,9 @@ local commandActions = {
         local commandDef = commandDefinitions[command]
         if not commandDef or not commandDef.custom then return end
 
+        -- Skip processing for sendpos command since it's handled separately
+        if command == "sendpos" then return end
+
         -- Process custom messages
         for _, msgDef in ipairs(commandDef.custom) do
             if msgDef.message then
@@ -497,8 +500,96 @@ local commandActions = {
                     math.floor(z) .. "). Tracking type: " .. trackingType)
             end
         end
+    end,
+
+    sharePosition = function(player, params)
+        local receiver = params.receiver
+        local message = params.message or ""
+
+        if not receiver or receiver == "" then
+            outputChatBox("SYNTAX: /sendpos [player/team/admins] [optional message]", player, 255, 255, 0)
+            return
+        end
+
+        local targetType
+        if receiver:lower() == "team" then
+            targetType = "team"
+        elseif receiver:lower() == "admins" then
+            targetType = "admins"
+        else
+            targetType = "player"
+        end
+
+        sendPositionToTarget(player, targetType, receiver, message)
     end
 }
+
+-- Simple utility function to handle position sharing
+local function sendPositionToTarget(player, targetType, targetName, message)
+    -- Get player's current position
+    local x, y, z = getElementPosition(player)
+    local zoneName = getZoneName(x, y, z) or "Unknown"
+    local locationText = zoneName .. " (" .. math.floor(x) .. ", " .. math.floor(y) .. ", " .. math.floor(z) .. ")"
+
+    -- Format the message to send
+    local positionInfo = "[LOCATION] " .. getPlayerName(player) .. " is at " .. locationText
+    if message and message ~= "" then
+        positionInfo = positionInfo .. " (" .. message .. ")"
+    end
+
+    -- Determine target(s) to send to
+    local targets = {}
+
+    if targetType == "player" then
+        -- Send to specific player
+        local targetPlayer = getPlayerFromPartialName(targetName)
+        if targetPlayer then
+            table.insert(targets, targetPlayer)
+        else
+            outputChatBox("Player not found.", player, 255, 0, 0)
+            return false
+        end
+    elseif targetType == "team" then
+        -- Send to player's team
+        local team = getPlayerTeam(player)
+        if team then
+            targets = getPlayersInTeam(team)
+        else
+            outputChatBox("You are not in a team.", player, 255, 0, 0)
+            return false
+        end
+    elseif targetType == "admins" then
+        -- Send to all admins
+        for _, targetPlayer in ipairs(getElementsByType("player")) do
+            if hasObjectPermissionTo(targetPlayer, "command.mute", false) then
+                table.insert(targets, targetPlayer)
+            end
+        end
+
+        if #targets == 0 then
+            outputChatBox("No admins online.", player, 255, 165, 0)
+            return false
+        end
+    else
+        outputChatBox("Invalid target. Use a player name, 'team', or 'admins'.", player, 255, 0, 0)
+        return false
+    end
+
+    -- Send the position info to all targets
+    for _, target in ipairs(targets) do
+        outputChatBox(positionInfo, target, 0, 204, 255, true)
+    end
+
+    -- Confirm to sender
+    local targetDesc = targetType == "player" and targetName or targetType
+    outputChatBox("Location sent to " .. targetDesc .. ".", player, 0, 204, 255)
+
+    -- Log the action
+    outputServerLog("POSITION: " .. getPlayerName(player) .. " sent position to " ..
+                    targetDesc .. ": " .. locationText)
+
+    return true
+end
 
 -- Function to check if player has permission to use a command
 local function hasCommandPermission(player, permission)
@@ -711,6 +802,24 @@ local function processCommand(player, cmd, ...)
     if params == false then
         outputChatBox("SYNTAX: /" .. cmd .. " " .. (commandDef.syntax or ""), player, 255, 255, 0)
         return
+    end
+
+    -- Handle sendpos command specifically to avoid duplicate processing
+    if commandName == "sendpos" then
+        local receiver = params.receiver
+        local message = params.message or ""
+
+        local targetType
+        if receiver:lower() == "team" then
+            targetType = "team"
+        elseif receiver:lower() == "admins" then
+            targetType = "admins"
+        else
+            targetType = "player"
+        end
+
+        sendPositionToTarget(player, targetType, receiver, message)
+        return -- Exit after processing
     end
 
     -- Execute the command action
