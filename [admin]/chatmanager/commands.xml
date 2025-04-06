@@ -1,6 +1,6 @@
 <commands>
     <!-- Player Commands -->
-    <command name="pm" alias="msg,whisper" action="privateMessage" description="Send a private message to another player">
+    <command name="pm1" alias="msg,whisper" action="privateMessage" description="Send a private message to another player">
         <parameter name="target" type="player" description="Player to send message to" />
         <parameter name="message" type="text" description="Message to send" />
         <permission>none</permission>
