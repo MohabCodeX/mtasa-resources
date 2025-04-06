@@ -1087,3 +1087,109 @@ addCommandHandler("testcolors", function(player)
         outputChatBox(coloredName, player, 255, 255, 255, true)
     end
 end)
+
+-- Add commands to control player color settings
+addCommandHandler("colorsetting", function(player, cmd, setting, value)
+    -- Check admin permissions
+    if not hasObjectPermissionTo(player, "command.kick", false) then
+        return outputChatBox("You need admin permissions to use this command.", player, 255, 0, 0)
+    end
+
+    -- List available settings if no arguments provided
+    if not setting then
+        outputChatBox("=== Available Color Settings ===", player, 255, 255, 0)
+        outputChatBox("use_player_colors: " .. tostring(getSettingValue("use_player_colors")), player, 255, 255, 255)
+        outputChatBox("player_colors_dynamic: " .. tostring(getSettingValue("player_colors_dynamic")), player, 255, 255, 255)
+        outputChatBox("player_colors_override_team: " .. tostring(getSettingValue("player_colors_override_team")), player, 255, 255, 255)
+        outputChatBox("player_color_min: " .. tostring(getSettingValue("player_color_min")), player, 255, 255, 255)
+        outputChatBox("player_color_max: " .. tostring(getSettingValue("player_color_max")), player, 255, 255, 255)
+        outputChatBox("use_team_colors: " .. tostring(getSettingValue("use_team_colors")), player, 255, 255, 255)
+        outputChatBox("use_nametag_colors: " .. tostring(getSettingValue("use_nametag_colors")), player, 255, 255, 255)
+        outputChatBox("Usage: /colorsetting [setting] [value]", player, 255, 255, 0)
+        return
+    end
+
+    -- Normalize setting name
+    setting = string.lower(setting)
+
+    -- Map command parameters to actual setting names
+    local settingMap = {
+        ["override"] = "player_colors_override_team",
+        ["playercolors"] = "use_player_colors",
+        ["dynamic"] = "player_colors_dynamic",
+        ["teamcolors"] = "use_team_colors",
+        ["nametagcolors"] = "use_nametag_colors",
+        ["min"] = "player_color_min",
+        ["max"] = "player_color_max"
+    }
+
+    local actualSetting = settingMap[setting] or setting
+
+    -- Check if setting exists
+    if not getSettingValue(actualSetting) and getSettingValue(actualSetting) ~= false then
+        outputChatBox("Error: Unknown setting '" .. setting .. "'", player, 255, 0, 0)
+        return
+    end
+
+    -- Handle boolean settings with no value provided (toggle)
+    local currentValue = getSettingValue(actualSetting)
+    if not value and type(currentValue) == "boolean" then
+        value = not currentValue and "true" or "false"
+    elseif not value then
+        outputChatBox("Current value of '" .. actualSetting .. "' is: " .. tostring(currentValue), player, 255, 255, 0)
+        return
+    end
+
+    -- Convert value based on current setting type
+    local newValue
+    if type(currentValue) == "boolean" then
+        if value == "true" or value == "1" or value == "on" or value == "yes" or value == "enable" then
+            newValue = true
+        elseif value == "false" or value == "0" or value == "off" or value == "no" or value == "disable" then
+            newValue = false
+        else
+            outputChatBox("Error: Value must be true/false for this setting", player, 255, 0, 0)
+            return
+        end
+    elseif type(currentValue) == "number" then
+        newValue = tonumber(value)
+        if not newValue then
+            outputChatBox("Error: Value must be a number for this setting", player, 255, 0, 0)
+            return
+        end
+    else
+        newValue = value
+    end
+
+    -- Apply the setting
+    setSettingValue(actualSetting, newValue)
+
+    -- Notify the admin
+    outputChatBox("Setting '" .. actualSetting .. "' changed to: " .. tostring(newValue), player, 0, 255, 0)
+
+    -- Notify all players for important settings
+    if actualSetting == "player_colors_override_team" then
+        local actionText = newValue and "now override" or "no longer override"
+        outputChatBox("Player colors " .. actionText .. " team colors.", root, 255, 165, 0)
+    elseif actualSetting == "use_player_colors" then
+        if newValue then
+            randomizeAllPlayerColors()
+            outputChatBox("Player colors have been enabled.", root, 0, 255, 0)
+        else
+            resetAllPlayerColors()
+            outputChatBox("Player colors have been disabled.", root, 255, 100, 100)
+        end
+    elseif actualSetting == "player_colors_dynamic" then
+        local modeText = newValue and "dynamic (changing with each message)" or "static (fixed per player)"
+        outputChatBox("Player colors mode changed to: " .. modeText, root, 255, 165, 0)
+    end
+
+    -- Log the action
+    outputServerLog("ADMIN: " .. getPlayerName(player) .. " changed chat setting '" .. actualSetting .. "' to " .. tostring(newValue))
+end)
+
+-- Quick shortcuts for common settings
+addCommandHandler("coloroverride", function(player, cmd, value)
+    -- Simply pass to the main command handler
+    executeCommandHandler("colorsetting", player, "override", value)
+end)

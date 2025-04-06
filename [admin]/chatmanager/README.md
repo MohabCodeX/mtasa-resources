@@ -51,10 +51,29 @@ Chat Manager includes a player color system that can randomly assign colors to p
 
 ### Admin Commands
 
-| Command                     | Description                                | Required Permission |
-| --------------------------- | ------------------------------------------ | ------------------- |
-| `/playercolors [on/off]`    | Enable or disable random player colors     | command.kick        |
-| `/randomcolor [playername]` | Randomize color for specific player or all | command.kick        |
+| Command                                   | Description                                       | Required Permission |
+| ----------------------------------------- | ------------------------------------------------- | ------------------- |
+| `/playercolors [on/off] [static/dynamic]` | Enable/disable random player colors with mode     | command.kick        |
+| `/randomcolor [playername]`               | Randomize color for specific player or all        | command.kick        |
+| `/colorsetting`                           | List all available color settings                 | command.kick        |
+| `/colorsetting [setting] [value]`         | Change a specific color setting                   | command.kick        |
+| `/coloroverride [true/false]`             | Toggle whether player colors override team colors | command.kick        |
+
+Available settings for `/colorsetting`:
+- `override` (player_colors_override_team) - Whether player colors override team colors
+- `playercolors` (use_player_colors) - Enable/disable player colors
+- `dynamic` (player_colors_dynamic) - Whether colors change with each message
+- `teamcolors` (use_team_colors) - Enable/disable team colors
+- `nametagcolors` (use_nametag_colors) - Enable/disable nametag colors
+- `min` (player_color_min) - Minimum RGB value for random colors
+- `max` (player_color_max) - Maximum RGB value for random colors
+
+Examples:
+```
+/colorsetting override true
+/colorsetting dynamic false
+/colorsetting min 100
+```
 
 ### Configuration
 
