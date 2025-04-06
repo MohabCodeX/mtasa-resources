@@ -10,7 +10,17 @@ ChatManager now uses a completely streamlined approach that requires no explicit
 2. Resources simply remove their chat handlers
 3. No registration or special code needed
 
-This approach eliminates all integration complexity and provides a zero-effort solution for all resources.
+### Benefits
+
+This new automatic approach offers several advantages:
+
+1. **Zero Configuration** - No integration code needed for any resource
+2. **Automatic Team Detection** - Player team colors applied automatically
+3. **White Text Messages** - Chat messages always displayed in white for readability
+4. **Consistent Experience** - All gamemodes get the same chat appearance
+5. **Simplified Codebase** - No resource-specific code in ChatManager
+6. **Improved Team Chat** - Team chat messages show colored "(TEAM)" tag matching player name color
+7. **Default Styling** - Non-teamed players display with FF6464 color by default
 
 ## Implementation Steps for Any Resource
 
@@ -66,6 +76,8 @@ This new automatic approach offers several advantages:
 3. **White Text Messages** - Chat messages always displayed in white for readability
 4. **Consistent Experience** - All gamemodes get the same chat appearance
 5. **Simplified Codebase** - No resource-specific code in ChatManager
+6. **Improved Team Chat** - Team chat messages show colored "(TEAM)" tag matching player name color
+7. **Default Styling** - Non-teamed players display with FF6464 color by default
 
 ## Testing and Verification
 

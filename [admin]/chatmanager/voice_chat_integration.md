@@ -47,7 +47,7 @@ end
 local function formatChatMessage(player, message)
     local playerName = getPlayerName(player)
     local team = getPlayerTeam(player)
-    local r, g, b = 255, 255, 255
+    local r, g, b = 255, 100, 100 -- Default FF6464 color for non-teamed players
 
     if team then
         r, g, b = getTeamColor(team)
@@ -59,7 +59,7 @@ local function formatChatMessage(player, message)
     end
 
     return string.format("#%.2X%.2X%.2X%s:#FFFFFF %s", r, g, b, playerName, message)
-end
+}
 ```
 
 ### 3. Mute Level System
@@ -97,6 +97,7 @@ Our new streamlined ChatManager makes voice integration even easier:
 2. Works automatically with all gamemodes
 3. Mute status displayed consistently for everyone
 4. Simple implementation with direct voice exports
+5. Consistent team chat appearance with colored "(TEAM)" tag
 
 ## Performance Considerations
 

@@ -13,8 +13,10 @@
 - Support **team colors** using `getTeamColor()`.
 - Implement a configurable priority system:
   - Use team colors if enabled and the player is in a team.
+  - Use player colors if enabled (static or dynamic mode).
   - Fallback to nametag colors if team colors are disabled or unavailable.
-- Handle players with no team or nametag color gracefully (default to white).
+- Handle players with no team gracefully (default to FF6464 - light red).
+- Ensure team chat messages have consistent coloring (same color for tag and name).
 
 ## 3. Spam Protection
 
@@ -28,6 +30,7 @@
 - Strip color codes from messages when configured (`strip_color_codes`).
 - Format chat messages consistently:
   - Example: `<PlayerName>: <Message>` with appropriate colors.
+  - Team chat: `<TeamColored>(TEAM)</TeamColored> <TeamColoredPlayerName>: <Message>`
 - Log all chat messages to the server log for auditing purposes.
 
 ## 5. Admin Integration
@@ -58,4 +61,3 @@
 - Ensure compatibility with admin systems and other resources.
 
 ---
-

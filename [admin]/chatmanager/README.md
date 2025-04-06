@@ -48,6 +48,8 @@ Chat Manager includes a player color system that can randomly assign colors to p
 - Maintains colors across map changes
 - Admin control to enable/disable the system
 - Configurable color ranges for good visibility
+- Default color of FF6464 (255, 100, 100) for non-teamed players
+- Option for static colors (fixed per player) or dynamic colors (changing with each message)
 
 ### Admin Commands
 
@@ -87,6 +89,7 @@ The player colors system can be configured in `meta.xml`:
 | `player_color_min`            | Minimum RGB value (0-255) for random colors        | `50`    |
 | `player_color_max`            | Maximum RGB value (0-255) for random colors        | `255`   |
 | `player_colors_override_team` | Player colors override team colors if both enabled | `false` |
+| `player_colors_dynamic`       | Colors change with each message if true            | `false` |
 
 ### API for Other Resources
 
@@ -115,6 +118,8 @@ Regular chat messages visible to all players. Used through normal chat input.
 ### Team Chat
 
 Messages visible only to players in the same team. Used through team chat input.
+Team chat messages now show the "(TEAM)" tag in the same color as the player's name
+for better visual consistency.
 
 ### Private Messages
 
