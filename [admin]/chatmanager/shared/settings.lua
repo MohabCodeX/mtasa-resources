@@ -14,7 +14,8 @@ local defaultSettings = {
     use_player_colors = false,
     player_color_min = 50,
     player_color_max = 255,
-    player_colors_override_team = false
+    player_colors_override_team = false,
+    player_colors_dynamic = false
 }
 
 -- Default color settings for different message types

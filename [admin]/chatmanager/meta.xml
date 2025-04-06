@@ -88,6 +88,7 @@
         <setting name="*player_color_min" value="50" description="Minimum brightness value for random colors (0-255)" />
         <setting name="*player_color_max" value="255" description="Maximum brightness value for random colors (0-255)" />
         <setting name="*player_colors_override_team" value="false" description="Player colors override team colors if both enabled" />
+        <setting name="*player_colors_dynamic" value="false" description="Colors change with each message (true) or stay static (false)" />
     </settings>
 
     <!-- ACL permissions needed -->

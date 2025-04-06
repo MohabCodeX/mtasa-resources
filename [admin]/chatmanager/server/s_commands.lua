@@ -945,7 +945,7 @@ function toggleChatBlock(player, state)
 end
 
 -- Player colors commands
-addCommandHandler("playercolors", function(player, cmd, state)
+addCommandHandler("playercolors", function(player, cmd, state, mode)
     -- Check admin permissions
     if not hasObjectPermissionTo(player, "command.kick", false) then
         return outputChatBox("You need admin permissions to use this command.", player, 255, 0, 0)
@@ -954,8 +954,12 @@ addCommandHandler("playercolors", function(player, cmd, state)
     if not state then
         -- Display current status
         local enabled = getSettingValue("use_player_colors")
+        local dynamic = getSettingValue("player_colors_dynamic")
+        local modeText = dynamic and "DYNAMIC (changing)" or "STATIC (fixed per player)"
+
         outputChatBox("Player colors are currently " .. (enabled and "ENABLED" or "DISABLED"), player, 255, 255, 0)
-        outputChatBox("Usage: /playercolors [on/off]", player, 255, 255, 0)
+        outputChatBox("Color mode is: " .. modeText, player, 255, 255, 0)
+        outputChatBox("Usage: /playercolors [on/off] [static/dynamic]", player, 255, 255, 0)
         return
     end
 
@@ -963,6 +967,21 @@ addCommandHandler("playercolors", function(player, cmd, state)
     if state == "on" or state == "enable" or state == "1" then
         -- Enable player colors
         setSettingValue("use_player_colors", true)
+
+        -- Check if mode is specified
+        if mode then
+            if mode == "static" then
+                setSettingValue("player_colors_dynamic", false)
+                outputChatBox("Player colors set to STATIC mode (fixed color per player).", player, 0, 255, 0)
+            elseif mode == "dynamic" then
+                setSettingValue("player_colors_dynamic", true)
+                outputChatBox("Player colors set to DYNAMIC mode (colors change with each message).", player, 0, 255, 0)
+            else
+                outputChatBox("Invalid mode. Use 'static' or 'dynamic'.", player, 255, 100, 100)
+                return
+            end
+        end
+
         randomizeAllPlayerColors()
         outputChatBox("Player colors enabled. All players now have random colors.", player, 0, 255, 0)
 
@@ -976,8 +995,36 @@ addCommandHandler("playercolors", function(player, cmd, state)
 
         -- Announce to all players
         outputChatBox("Player colors have been disabled on the server.", root, 255, 100, 100)
+    elseif state == "static" then
+        -- Just change the mode to static
+        setSettingValue("player_colors_dynamic", false)
+        outputChatBox("Player colors set to STATIC mode (fixed color per player).", player, 0, 255, 0)
+
+        -- Make sure colors are enabled
+        if not getSettingValue("use_player_colors") then
+            setSettingValue("use_player_colors", true)
+            randomizeAllPlayerColors()
+            outputChatBox("Player colors have been enabled.", player, 0, 255, 0)
+        end
+
+        -- Announce to all players
+        outputChatBox("Player colors are now fixed per player.", root, 0, 255, 0)
+    elseif state == "dynamic" then
+        -- Just change the mode to dynamic
+        setSettingValue("player_colors_dynamic", true)
+        outputChatBox("Player colors set to DYNAMIC mode (colors change with each message).", player, 0, 255, 0)
+
+        -- Make sure colors are enabled
+        if not getSettingValue("use_player_colors") then
+            setSettingValue("use_player_colors", true)
+            randomizeAllPlayerColors()
+            outputChatBox("Player colors have been enabled.", player, 0, 255, 0)
+        end
+
+        -- Announce to all players
+        outputChatBox("Player colors now change with each message.", root, 0, 255, 0)
     else
-        outputChatBox("Usage: /playercolors [on/off]", player, 255, 255, 0)
+        outputChatBox("Usage: /playercolors [on/off/static/dynamic]", player, 255, 255, 0)
     end
 end)
 
@@ -1018,6 +1065,7 @@ addCommandHandler("testcolors", function(player)
 
     outputChatBox("===== Player Colors Debug Info =====", player, 255, 255, 0)
     outputChatBox("use_player_colors: " .. tostring(getSettingValue("use_player_colors")), player, 255, 255, 255)
+    outputChatBox("player_colors_dynamic: " .. tostring(getSettingValue("player_colors_dynamic")), player, 255, 255, 255)
     outputChatBox("use_nametag_colors: " .. tostring(getSettingValue("use_nametag_colors")), player, 255, 255, 255)
     outputChatBox("use_team_colors: " .. tostring(getSettingValue("use_team_colors")), player, 255, 255, 255)
     outputChatBox("team_colors_override: " .. tostring(getSettingValue("team_colors_override")), player, 255, 255, 255)

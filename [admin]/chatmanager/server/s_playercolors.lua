@@ -69,18 +69,33 @@ function getChatColorForPlayer(player)
         return getPlayerNametagColor(player)
     end
 
-    -- Get color range from settings for consistency
-    local lowerBound, upperBound = getColorRange()
+    -- Check if we're using dynamic or static colors
+    local isDynamic = getSettingValue("player_colors_dynamic")
 
-    -- Generate a new random color for this chat message
-    local r = math.random(lowerBound, upperBound)
-    local g = math.random(lowerBound, upperBound)
-    local b = math.random(lowerBound, upperBound)
+    if isDynamic then
+        -- Dynamic mode: generate a new random color for each message
+        local lowerBound, upperBound = getColorRange()
+        local r = math.random(lowerBound, upperBound)
+        local g = math.random(lowerBound, upperBound)
+        local b = math.random(lowerBound, upperBound)
 
-    -- Store this color as the player's current chat color
-    playerChatColors[player] = {r = r, g = g, b = b}
+        -- Store this color as the player's current chat color
+        playerChatColors[player] = {r = r, g = g, b = b}
 
-    return r, g, b
+        return r, g, b
+    else
+        -- Static mode: use the player's stored color or generate one if needed
+        local storedColor = getElementData(player, "chatmanager.playercolor")
+
+        if storedColor then
+            return storedColor[1], storedColor[2], storedColor[3]
+        else
+            -- No color set yet, randomize one and store it
+            randomizePlayerColor(player)
+            storedColor = getElementData(player, "chatmanager.playercolor")
+            return storedColor[1], storedColor[2], storedColor[3]
+        end
+    end
 end
 
 -- Cleanup when a player quits
