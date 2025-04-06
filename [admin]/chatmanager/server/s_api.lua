@@ -26,6 +26,10 @@ Functions exported by this resource:
 - registerChatResource(resourceName, options)
 - isResourceRegistered(resourceName)
 - getResourceChatOptions(resourceName)
+- randomizePlayerColor(player)
+- randomizeAllPlayerColors()
+- resetPlayerColor(player)
+- resetAllPlayerColors()
 ]]--
 
 -- Send a chat message from a player or system
@@ -79,10 +83,14 @@ function sendChatMessage(player, message, messageType, receiver)
             local teamPlayers = getPlayersInTeam(team)
             outputServerLog("TEAMCHAT: " .. getPlayerName(player) .. ": " .. message)
 
+            -- Always use team color for team chat
+            local r, g, b = getTeamColor(team)
+            local teamColoredName = string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
+
             local targetPlayers = receiver and {receiver} or teamPlayers
             for _, teamPlayer in ipairs(targetPlayers) do
                 if not receiver or (getPlayerTeam(receiver) == team) then
-                    outputChatBox("(TEAM) " .. getColoredPlayerName(player) .. ": " .. message, teamPlayer, 255, 255, 255, true)
+                    outputChatBox("(TEAM) " .. teamColoredName .. ":#FFFFFF " .. message, teamPlayer, 255, 255, 255, true)
                 end
             end
             return true
@@ -129,10 +137,20 @@ end
 function getColoredPlayerName(player)
     local r, g, b = 211, 174, 154 -- Default D3AE9A for non-teamed players
 
+    -- Get all relevant settings
+    local usePlayerColors = getSettingValue("use_player_colors")
     local useNametagColors = getSettingValue("use_nametag_colors")
     local useTeamColors = getSettingValue("use_team_colors")
     local teamColorsOverride = getSettingValue("team_colors_override")
+    local playerColorsOverrideTeam = getSettingValue("player_colors_override_team")
 
+    -- Priority 1: Player colors with override
+    if usePlayerColors and playerColorsOverrideTeam then
+        r, g, b = getChatColorForPlayer(player)
+        return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
+    end
+
+    -- Priority 2: Team colors
     if useTeamColors then
         local team = getPlayerTeam(player)
         if team then
@@ -143,6 +161,13 @@ function getColoredPlayerName(player)
         end
     end
 
+    -- Priority 3: Player colors without override
+    if usePlayerColors and not playerColorsOverrideTeam then
+        r, g, b = getChatColorForPlayer(player)
+        return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
+    end
+
+    -- Priority 4: Nametag colors
     if useNametagColors then
         r, g, b = getPlayerNametagColor(player)
         return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
@@ -151,6 +176,41 @@ function getColoredPlayerName(player)
     -- Return with default color for non-teamed players
     return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
 end
+
+-- Randomize a player's name color
+-- player: The player element
+-- Returns: true if successful, false otherwise
+function randomizePlayerColor(player)
+    return _G.randomizePlayerColor(player)
+end
+
+-- Randomize all players' name colors
+-- Returns: true if successful
+function randomizeAllPlayerColors()
+    return _G.randomizeAllPlayerColors()
+end
+
+-- Reset a player's name color to default
+-- player: The player element
+-- Returns: true if successful, false otherwise
+function resetPlayerColor(player)
+    return _G.resetPlayerColor(player)
+end
+
+-- Reset all players' name colors to default
+-- Returns: true if successful
+function resetAllPlayerColors()
+    return _G.resetAllPlayerColors()
+end
+
+-- Get random chat color for a player
+-- Returns a new random color for chat display
+function getRandomChatColor()
+    return _G.getRandomChatColor()
+end
+
+-- Export the new function
+_G.getRandomChatColor = getRandomChatColor
 
 -- Send a private message from one player to another
 -- sender: The player element sending the message

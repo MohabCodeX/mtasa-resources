@@ -943,3 +943,99 @@ function toggleChatBlock(player, state)
     setElementData(player, "chatmanager.chatBlocked", state)
     outputChatBox("Chat messages are now " .. (state and "blocked" or "unblocked"), player, 255, 165, 0)
 end
+
+-- Player colors commands
+addCommandHandler("playercolors", function(player, cmd, state)
+    -- Check admin permissions
+    if not hasObjectPermissionTo(player, "command.kick", false) then
+        return outputChatBox("You need admin permissions to use this command.", player, 255, 0, 0)
+    end
+
+    if not state then
+        -- Display current status
+        local enabled = getSettingValue("use_player_colors")
+        outputChatBox("Player colors are currently " .. (enabled and "ENABLED" or "DISABLED"), player, 255, 255, 0)
+        outputChatBox("Usage: /playercolors [on/off]", player, 255, 255, 0)
+        return
+    end
+
+    -- Process command
+    if state == "on" or state == "enable" or state == "1" then
+        -- Enable player colors
+        setSettingValue("use_player_colors", true)
+        randomizeAllPlayerColors()
+        outputChatBox("Player colors enabled. All players now have random colors.", player, 0, 255, 0)
+
+        -- Announce to all players
+        outputChatBox("Player colors have been enabled on the server.", root, 0, 255, 0)
+    elseif state == "off" or state == "disable" or state == "0" then
+        -- Disable player colors
+        setSettingValue("use_player_colors", false)
+        resetAllPlayerColors()
+        outputChatBox("Player colors disabled. All players reverted to default white.", player, 255, 100, 100)
+
+        -- Announce to all players
+        outputChatBox("Player colors have been disabled on the server.", root, 255, 100, 100)
+    else
+        outputChatBox("Usage: /playercolors [on/off]", player, 255, 255, 0)
+    end
+end)
+
+addCommandHandler("randomcolor", function(player, cmd, targetName)
+    -- Check admin permissions
+    if not hasObjectPermissionTo(player, "command.kick", false) then
+        return outputChatBox("You need admin permissions to use this command.", player, 255, 0, 0)
+    end
+
+    -- Check if player colors are enabled
+    if not getSettingValue("use_player_colors") then
+        return outputChatBox("Player colors are currently disabled. Use /playercolors on to enable.", player, 255, 0, 0)
+    end
+
+    -- Randomize target player's color or all players
+    if not targetName then
+        -- Randomize color for all players
+        randomizeAllPlayerColors()
+        outputChatBox("Randomized colors for all players.", player, 0, 255, 0)
+    else
+        -- Find target player
+        local target = getPlayerFromPartialName(targetName)
+        if target then
+            randomizePlayerColor(target)
+            outputChatBox("Randomized color for player: " .. getPlayerName(target), player, 0, 255, 0)
+            outputChatBox("An admin has randomized your name color.", target, 0, 255, 0)
+        else
+            outputChatBox("Player not found: " .. targetName, player, 255, 0, 0)
+        end
+    end
+end)
+
+-- Add a debug command for testing player colors
+addCommandHandler("testcolors", function(player)
+    if not hasObjectPermissionTo(player, "command.kick", false) then
+        return outputChatBox("You need admin permissions to use this command.", player, 255, 0, 0)
+    end
+
+    outputChatBox("===== Player Colors Debug Info =====", player, 255, 255, 0)
+    outputChatBox("use_player_colors: " .. tostring(getSettingValue("use_player_colors")), player, 255, 255, 255)
+    outputChatBox("use_nametag_colors: " .. tostring(getSettingValue("use_nametag_colors")), player, 255, 255, 255)
+    outputChatBox("use_team_colors: " .. tostring(getSettingValue("use_team_colors")), player, 255, 255, 255)
+    outputChatBox("team_colors_override: " .. tostring(getSettingValue("team_colors_override")), player, 255, 255, 255)
+    outputChatBox("player_colors_override_team: " .. tostring(getSettingValue("player_colors_override_team")), player, 255, 255, 255)
+    outputChatBox("player_color_min: " .. tostring(getSettingValue("player_color_min")), player, 255, 255, 255)
+    outputChatBox("player_color_max: " .. tostring(getSettingValue("player_color_max")), player, 255, 255, 255)
+
+    -- Show each player's current colors
+    outputChatBox("Player Nametag Colors:", player, 255, 255, 0)
+    for _, testPlayer in ipairs(getElementsByType("player")) do
+        local r, g, b = getPlayerNametagColor(testPlayer)
+        outputChatBox(getPlayerName(testPlayer) .. ": RGB(" .. tostring(r) .. "," .. tostring(g) .. "," .. tostring(b) .. ")", player, r, g, b)
+    end
+
+    -- Show how getColoredPlayerName renders each player
+    outputChatBox("Player Colored Names in Chat:", player, 255, 255, 0)
+    for _, testPlayer in ipairs(getElementsByType("player")) do
+        local coloredName = getColoredPlayerName(testPlayer)
+        outputChatBox(coloredName, player, 255, 255, 255, true)
+    end
+end)

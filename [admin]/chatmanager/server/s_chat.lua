@@ -9,10 +9,20 @@ local lastMessageFrom = {}
 local function getColoredPlayerName(player)
     local r, g, b = 211, 174, 154 -- Default color D3AE9A for non-teamed players
 
+    -- Get all relevant settings
+    local usePlayerColors = getSettingValue("use_player_colors")
     local useNametagColors = getSettingValue("use_nametag_colors")
     local useTeamColors = getSettingValue("use_team_colors")
     local teamColorsOverride = getSettingValue("team_colors_override")
+    local playerColorsOverrideTeam = getSettingValue("player_colors_override_team")
 
+    -- Priority 1: Player colors with override
+    if usePlayerColors and playerColorsOverrideTeam then
+        r, g, b = getChatColorForPlayer(player)
+        return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
+    end
+
+    -- Priority 2: Team colors
     if useTeamColors then
         local team = getPlayerTeam(player)
         if team then
@@ -23,12 +33,19 @@ local function getColoredPlayerName(player)
         end
     end
 
+    -- Priority 3: Player colors without override
+    if usePlayerColors and not playerColorsOverrideTeam then
+        r, g, b = getChatColorForPlayer(player)
+        return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
+    end
+
+    -- Priority 4: Nametag colors
     if useNametagColors then
         r, g, b = getPlayerNametagColor(player)
         return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
     end
 
-    -- Return with default color for non-teamed players
+    -- Default fallback color for non-teamed players
     return string.format("#%.2X%.2X%.2X%s", r, g, b, getPlayerName(player))
 end
 
@@ -147,45 +164,18 @@ function handleChatMessage(player, messageType, message, receiver)
     -- 0: normal message, 1: action message (/me), 2: team message,
     -- 3: private message, 4: internal message
     if messageType == 0 then -- Normal message
-        local team = getPlayerTeam(player)
-        local r, g, b = 211, 174, 154 -- Default D3AE9A for non-teamed players
-
-        if team then
-            r, g, b = getTeamColor(team) -- Use team color for player name
-        end
-
-        -- Get chat format for the player's gamemode
-        local format = getPlayerChatFormat(player)
-        -- Ensure format is valid (defensive programming)
-        if not format then
-            format = {separator = ": ", useTeamColors = true}
-        end
-
         -- Always use a separator that enforces white text for the message
         local separator = ":#FFFFFF "
-        local useTeamColors = format.useTeamColors
 
-        -- Format message with player name in team color and ALWAYS white message text
-        if useTeamColors then
-            outputChatBox(string.format("#%.2X%.2X%.2X%s%s%s", r, g, b, playerName, separator, message), root, 255, 255, 255, true)
-        else
-            -- For non-team players, use D3AE9A color
-            outputChatBox(string.format("#D3AE9A%s%s%s", playerName, separator, message), root, 255, 255, 255, true)
-        end
+        -- Use the pre-colored player name with dynamic color (if enabled)
+        outputChatBox(coloredName .. separator .. message, root, 255, 255, 255, true)
 
         outputServerLog("CHAT: " .. playerName .. ": " .. message)
         return false
 
     elseif messageType == 1 then -- Action message (/me)
-        local team = getPlayerTeam(player)
-        local r, g, b = 211, 174, 154 -- Default color
-
-        if team then
-            r, g, b = getTeamColor(team)
-        end
-
-        -- Format: * Player name action text * with white action text
-        outputChatBox(string.format("#%.2X%.2X%.2X* %s#FFFFFF %s *", r, g, b, playerName, message), root, 255, 255, 255, true)
+        -- Format action messages with dynamic colors as well
+        outputChatBox("* " .. coloredName .. "#FFFFFF " .. message .. " *", root, 255, 255, 255, true)
         outputServerLog("ACTION: * " .. playerName .. " " .. message .. " *")
         return false
 
@@ -194,8 +184,13 @@ function handleChatMessage(player, messageType, message, receiver)
         if team then
             local teamPlayers = getPlayersInTeam(team)
             outputServerLog("TEAMCHAT: " .. playerName .. ": " .. message)
+
+            -- MODIFIED: Always use team color for team chat regardless of player colors setting
+            local r, g, b = getTeamColor(team)
+            local teamColoredName = string.format("#%.2X%.2X%.2X%s", r, g, b, playerName)
+
             for _, teamPlayer in ipairs(teamPlayers) do
-                outputChatBox("(TEAM) " .. coloredName .. ":#FFFFFF " .. message, teamPlayer, 255, 255, 255, true)
+                outputChatBox("(TEAM) " .. teamColoredName .. ":#FFFFFF " .. message, teamPlayer, 255, 255, 255, true)
             end
         else
             outputChatBox("You are not in a team.", player, 255, 0, 0)

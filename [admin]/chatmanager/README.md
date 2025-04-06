@@ -38,6 +38,51 @@ All settings can be adjusted in the `meta.xml` file:
 | `block_repeated_messages` | Block repeated messages from players                      | `true`  |
 | `strip_color_codes`       | Strip color codes from messages                           | `true`  |
 
+## Player Colors System
+
+Chat Manager includes a player color system that can randomly assign colors to players' names:
+
+### Features
+
+- Randomly assigns colors to players when they join
+- Maintains colors across map changes
+- Admin control to enable/disable the system
+- Configurable color ranges for good visibility
+
+### Admin Commands
+
+| Command                     | Description                                | Required Permission |
+| --------------------------- | ------------------------------------------ | ------------------- |
+| `/playercolors [on/off]`    | Enable or disable random player colors     | command.kick        |
+| `/randomcolor [playername]` | Randomize color for specific player or all | command.kick        |
+
+### Configuration
+
+The player colors system can be configured in `meta.xml`:
+
+| Setting                       | Description                                        | Default |
+| ----------------------------- | -------------------------------------------------- | ------- |
+| `use_player_colors`           | Enable/disable random player colors                | `false` |
+| `player_color_min`            | Minimum RGB value (0-255) for random colors        | `50`    |
+| `player_color_max`            | Maximum RGB value (0-255) for random colors        | `255`   |
+| `player_colors_override_team` | Player colors override team colors if both enabled | `false` |
+
+### API for Other Resources
+
+```lua
+-- Randomize a player's name color
+exports.chatmanager:randomizePlayerColor(player)
+
+-- Randomize all players' name colors
+exports.chatmanager:randomizeAllPlayerColors()
+
+-- Reset a player's name color to default
+exports.chatmanager:resetPlayerColor(player)
+
+-- Reset all players' name colors to default
+exports.chatmanager:resetAllPlayerColors()
+```
+
 ## Message Types
 
 Chat Manager supports various types of messages:

@@ -5,6 +5,7 @@
     <script src="server/s_chat.lua" type="server" />
     <script src="server/s_api.lua" type="server" />
     <script src="server/s_commands.lua" type="server" />
+    <script src="server/s_playercolors.lua" type="server" />
     <script src="client/c_chat.lua" type="client" cache="false" />
     <script src="shared/settings.lua" type="shared" />
     <script src="server/s_tdma_integration.lua" type="server" />
@@ -34,11 +35,14 @@
     <export function="registerCustomCommand" type="server" />
     <export function="unregisterCustomCommand" type="server" />
     <export function="sendPositionToTarget" type="server" />
-
-    <!-- Additional exports for integration -->
     <export function="registerChatResource" type="server" />
     <export function="isResourceRegistered" type="server" />
     <export function="getResourceChatOptions" type="server" />
+    <export function="randomizePlayerColor" type="server" />
+    <export function="randomizeAllPlayerColors" type="server" />
+    <export function="resetPlayerColor" type="server" />
+    <export function="resetAllPlayerColors" type="server" />
+    <export function="getRandomChatColor" type="server" />
 
     <!-- Files that can be included by other resources -->
     <include resource="chatmanager" />
@@ -78,6 +82,12 @@
         <setting name="*color_private_to_r" value="255" description="Outgoing PM text color (R)" />
         <setting name="*color_private_to_g" value="255" description="Outgoing PM text color (G)" />
         <setting name="*color_private_to_b" value="0" description="Outgoing PM text color (B)" />
+
+        <!-- Player Colors Options -->
+        <setting name="*use_player_colors" value="false" description="Use random colors for player names (default false)" />
+        <setting name="*player_color_min" value="50" description="Minimum brightness value for random colors (0-255)" />
+        <setting name="*player_color_max" value="255" description="Maximum brightness value for random colors (0-255)" />
+        <setting name="*player_colors_override_team" value="false" description="Player colors override team colors if both enabled" />
     </settings>
 
     <!-- ACL permissions needed -->

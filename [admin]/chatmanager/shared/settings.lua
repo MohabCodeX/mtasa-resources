@@ -8,7 +8,13 @@ local defaultSettings = {
     chat_message_delay = 1000,
     block_repeated_messages = true,
     strip_color_codes = true,
-    admin_bypass_spam = true
+    admin_bypass_spam = true,
+
+    -- Player colors settings (default off)
+    use_player_colors = false,
+    player_color_min = 50,
+    player_color_max = 255,
+    player_colors_override_team = false
 }
 
 -- Default color settings for different message types
@@ -60,6 +66,23 @@ function getSettingValue(settingName)
     settingsCache[settingName] = settingValue
 
     return settingValue
+end
+
+-- Function to set a setting value (for admin commands)
+function setSettingValue(settingName, value)
+    -- Update cache
+    settingsCache[settingName] = value
+
+    -- Try to update in meta.xml if possible
+    local resourceName = getResourceName(getThisResource())
+    local settingKey = resourceName .. "." .. settingName
+
+    -- If setting change fails, we still keep it in cache
+    if not set(settingKey, tostring(value)) then
+        outputDebugString("Warning: Couldn't save setting " .. settingName .. " to meta.xml", 2)
+    end
+
+    return true
 end
 
 -- Function to get message color by type

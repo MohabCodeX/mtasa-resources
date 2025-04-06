@@ -4,18 +4,29 @@ This guide explains how to modify existing resources to work with the centralize
 
 ## For playercolors
 
-1. Remove the `onPlayerChat` event handler:
+1. You can now completely remove the `playercolors` resource as its functionality is integrated into ChatManager.
+
+2. To enable the player colors functionality in ChatManager:
 
    ```lua
-   -- Remove this entire handler
-   addEventHandler("onPlayerChat", root, function(message, messageType)
-       -- chat color handling code...
-   end)
+   -- In server ACL-protected script:
+   exports.chatmanager:setSettingValue("use_player_colors", true)
+   exports.chatmanager:randomizeAllPlayerColors()
    ```
 
-2. If you need colored player names, use the ChatManager API instead:
+3. Or use the admin command:
+
+   ```
+   /playercolors on
+   ```
+
+4. If you need to access player colors API:
+
    ```lua
-   -- Instead of handling colors yourself
+   -- Randomize a player's color
+   exports.chatmanager:randomizePlayerColor(player)
+
+   -- Get a player's colored name for display
    local coloredName = exports.chatmanager:getColoredPlayerName(player)
    ```
 
