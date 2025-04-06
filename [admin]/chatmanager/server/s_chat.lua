@@ -7,7 +7,7 @@ local lastMessageFrom = {}
 
 -- Function to get player name with appropriate color
 local function getColoredPlayerName(player)
-    local r, g, b = 211, 174, 154 -- Default color D3AE9A for non-teamed players
+    local r, g, b = 255, 100, 100 -- Default color FF6464 for non-teamed players (changed from D3AE9A)
 
     -- Get all relevant settings
     local usePlayerColors = getSettingValue("use_player_colors")
@@ -189,8 +189,11 @@ function handleChatMessage(player, messageType, message, receiver)
             local r, g, b = getTeamColor(team)
             local teamColoredName = string.format("#%.2X%.2X%.2X%s", r, g, b, playerName)
 
+            -- Color the "(TEAM)" tag the same as the player name
+            local teamColoredTag = string.format("#%.2X%.2X%.2X(TEAM)", r, g, b)
+
             for _, teamPlayer in ipairs(teamPlayers) do
-                outputChatBox("(TEAM) " .. teamColoredName .. ":#FFFFFF " .. message, teamPlayer, 255, 255, 255, true)
+                outputChatBox(teamColoredTag .. " " .. teamColoredName .. ":#FFFFFF " .. message, teamPlayer, 255, 255, 255, true)
             end
         else
             outputChatBox("You are not in a team.", player, 255, 0, 0)

@@ -60,6 +60,7 @@ Chat Manager includes a player color system that can randomly assign colors to p
 | `/coloroverride [true/false]`             | Toggle whether player colors override team colors | command.kick        |
 
 Available settings for `/colorsetting`:
+
 - `override` (player_colors_override_team) - Whether player colors override team colors
 - `playercolors` (use_player_colors) - Enable/disable player colors
 - `dynamic` (player_colors_dynamic) - Whether colors change with each message
@@ -69,6 +70,7 @@ Available settings for `/colorsetting`:
 - `max` (player_color_max) - Maximum RGB value for random colors
 
 Examples:
+
 ```
 /colorsetting override true
 /colorsetting dynamic false

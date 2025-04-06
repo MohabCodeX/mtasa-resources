@@ -120,8 +120,8 @@ end
 function resetPlayerColor(player)
     if not isElement(player) or getElementType(player) ~= "player" then return false end
 
-    -- Set to default white (false resets to default)
-    setPlayerNametagColor(player, false)
+    -- Set to default FF6464 color (instead of white)
+    setPlayerNametagColor(player, 255, 100, 100)
 
     -- Clear stored color data
     setElementData(player, "chatmanager.playercolor", nil)
@@ -139,9 +139,14 @@ end
 
 -- Event handler for when a player joins
 addEventHandler("onPlayerJoin", root, function()
-    -- Only apply random color if player colors feature is enabled
+    -- If player colors feature is enabled, randomize the color
     if getSettingValue("use_player_colors") then
         randomizePlayerColor(source)
+    else
+        -- Otherwise, set to our default FF6464 color
+        setPlayerNametagColor(source, 255, 100, 100)
+        -- Store the default color for reference
+        setElementData(source, "chatmanager.playercolor", {255, 100, 100})
     end
 end)
 
@@ -150,6 +155,21 @@ addEventHandler("onGamemodeMapStart", root, function()
     -- Only reapply random colors if player colors feature is enabled
     if getSettingValue("use_player_colors") then
         randomizeAllPlayerColors()
+    end
+end)
+
+-- Initialize colors when resource starts
+addEventHandler("onResourceStart", resourceRoot, function()
+    -- Apply default colors to all players that are already connected
+    for _, player in ipairs(getElementsByType("player")) do
+        if getSettingValue("use_player_colors") then
+            randomizePlayerColor(player)
+        else
+            -- Set to our default FF6464 color
+            setPlayerNametagColor(player, 255, 100, 100)
+            -- Store the default color for reference
+            setElementData(player, "chatmanager.playercolor", {255, 100, 100})
+        end
     end
 end)
 

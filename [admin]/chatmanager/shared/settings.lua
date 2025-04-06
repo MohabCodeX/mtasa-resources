@@ -32,7 +32,8 @@ local defaultMessageColors = {
     tag_normal = {255, 255, 255},-- Tags/labels color for normal
     tag_pm = {255, 255, 0},      -- Tags color for PMs
     tag_system = {255, 255, 255},-- Tags color for system messages
-    tag_admin = {255, 0, 0}      -- Tags color for admin messages
+    tag_admin = {255, 0, 0},     -- Tags color for admin messages
+    player_default = {255, 100, 100} -- Default color for non-teamed players (FF6464)
 }
 
 -- Cache for settings to avoid repeated calls to get setting
