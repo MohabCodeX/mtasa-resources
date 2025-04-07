@@ -46,18 +46,18 @@ These commands require the "command.mute" permission.
 
 These commands require the "command.kick" permission and are used to control player name colors.
 
-| Command                     | Description                                              | Usage                                | Example                        |
-| --------------------------- | -------------------------------------------------------- | ------------------------------------ | ------------------------------ |
-| `/playercolors`             | Show player colors status                                | `/playercolors`                      | `/playercolors`                |
-| `/playercolors on/off`      | Enable/disable player colors                             | `/playercolors [on/off]`             | `/playercolors on`             |
-| `/playercolors static`      | Set player colors to fixed per player                    | `/playercolors static`               | `/playercolors static`         |
-| `/playercolors dynamic`     | Set player colors to change with each message            | `/playercolors dynamic`              | `/playercolors dynamic`        |
-| `/randomcolor`              | Randomize all player colors                              | `/randomcolor`                       | `/randomcolor`                 |
-| `/randomcolor [player]`     | Randomize a specific player's color                      | `/randomcolor [player]`              | `/randomcolor John`            |
-| `/colorsetting`             | List all color settings                                  | `/colorsetting`                      | `/colorsetting`                |
-| `/colorsetting [setting]`   | Show current value of a color setting                    | `/colorsetting [setting]`            | `/colorsetting override`       |
-| `/colorsetting [setting] [value]` | Change a color setting                             | `/colorsetting [setting] [value]`     | `/colorsetting override true`  |
-| `/coloroverride [value]`    | Toggle whether player colors override team colors        | `/coloroverride [true/false]`        | `/coloroverride true`          |
+| Command                           | Description                                       | Usage                             | Example                       |
+| --------------------------------- | ------------------------------------------------- | --------------------------------- | ----------------------------- |
+| `/playercolors`                   | Show player colors status                         | `/playercolors`                   | `/playercolors`               |
+| `/playercolors on/off`            | Enable/disable player colors                      | `/playercolors [on/off]`          | `/playercolors on`            |
+| `/playercolors static`            | Set player colors to fixed per player             | `/playercolors static`            | `/playercolors static`        |
+| `/playercolors dynamic`           | Set player colors to change with each message     | `/playercolors dynamic`           | `/playercolors dynamic`       |
+| `/randomcolor`                    | Randomize all player colors                       | `/randomcolor`                    | `/randomcolor`                |
+| `/randomcolor [player]`           | Randomize a specific player's color               | `/randomcolor [player]`           | `/randomcolor John`           |
+| `/colorsetting`                   | List all color settings                           | `/colorsetting`                   | `/colorsetting`               |
+| `/colorsetting [setting]`         | Show current value of a color setting             | `/colorsetting [setting]`         | `/colorsetting override`      |
+| `/colorsetting [setting] [value]` | Change a color setting                            | `/colorsetting [setting] [value]` | `/colorsetting override true` |
+| `/coloroverride [value]`          | Toggle whether player colors override team colors | `/coloroverride [true/false]`     | `/coloroverride true`         |
 
 When player colors are disabled, non-teamed players will have a default color of FF6464 (light red).
 
